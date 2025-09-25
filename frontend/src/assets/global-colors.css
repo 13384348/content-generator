@@ -1,0 +1,769 @@
+/* 🤖 AI科技感严格4色方案：白色70% + 黑色20% + 蓝色7% + 紫色3% */
+:root {
+  /* === 主色调 - 白色 70% === */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #fafbfc;
+  --color-bg-glass: rgba(255, 255, 255, 0.9);
+
+  /* === 辅色 - 黑色 20% === */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #666666;
+  --color-border: rgba(26, 26, 26, 0.1);
+  --color-shadow: rgba(26, 26, 26, 0.1);
+
+  /* === 强调色1 - 科技蓝 7% === */
+  --color-accent-primary: #667eea;
+  --color-accent-primary-rgb: 102, 126, 234;
+  --color-accent-primary-light: rgba(102, 126, 234, 0.1);
+
+  /* === 强调色2 - 智能紫 3% === */
+  --color-accent-secondary: #764ba2;
+  --color-accent-secondary-rgb: 118, 75, 162;
+  --color-accent-secondary-light: rgba(118, 75, 162, 0.1);
+
+  /* === AI科技感效果系统 === */
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-blur: blur(20px);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* === 阴影系统 === */
+  --shadow-small: 0 1px 3px rgba(26, 26, 26, 0.05);
+  --shadow-subtle: 0 1px 3px rgba(26, 26, 26, 0.08);
+  --shadow-medium: 0 4px 15px rgba(26, 26, 26, 0.1);
+  --shadow-strong: 0 8px 32px rgba(26, 26, 26, 0.12);
+
+  /* === 过渡动画系统 === */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* === 间距系统 === */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+
+  /* === 圆角系统 === */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 50%;
+
+  /* === 兼容旧系统 === */
+  --primary-white: var(--color-bg-primary);
+  --secondary-black: var(--color-text-primary);
+  --accent-purple: var(--color-accent-secondary);
+  --accent-blue: var(--color-accent-primary);
+}
+
+/* 暗色模式适配（保持4色限制） */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-primary: #0f0f0f;
+    --color-bg-secondary: #1a1a1a;
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #cccccc;
+    --glass-bg: rgba(26, 26, 26, 0.9);
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-shadow: rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* === Element Plus 按钮组件 - 严格4色合规 === */
+.el-button,
+.el-button.el-button--primary,
+.el-button.el-button--success,
+.el-button.el-button--warning,
+.el-button.el-button--danger,
+.el-button.el-button--info,
+button.el-button,
+[class*="el-button"] {
+  background: var(--color-bg-primary) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 500 !important;
+  transition: var(--transition-base) !important;
+  min-height: 44px !important; /* 移动端友好的触控区域 */
+  padding: var(--spacing-sm) var(--spacing-lg) !important;
+}
+
+/* 悬停效果：使用蓝色强调（7%） */
+.el-button:hover,
+.el-button.el-button--primary:hover,
+.el-button.el-button--success:hover,
+.el-button.el-button--warning:hover,
+.el-button.el-button--danger:hover,
+.el-button.el-button--info:hover,
+button.el-button:hover,
+[class*="el-button"]:hover {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-bg-primary) !important;
+  border-color: var(--color-accent-primary) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: var(--shadow-strong) !important;
+}
+
+/* 主要按钮使用蓝色背景（7%配额） */
+.el-button--primary {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-bg-primary) !important;
+  border-color: var(--color-accent-primary) !important;
+}
+
+.el-button--primary:hover {
+  background: var(--color-accent-secondary) !important;
+  border-color: var(--color-accent-secondary) !important;
+  box-shadow: 0 8px 25px rgba(var(--color-accent-primary-rgb), 0.3) !important;
+}
+
+/* 强制覆盖任何带有style属性的按钮 */
+button[style],
+.el-button[style],
+[class*="el-button"][style] {
+  background: var(--primary-white) !important;
+  color: var(--secondary-black) !important;
+  border: 1px solid rgba(44, 62, 80, 0.2) !important;
+}
+
+button[style]:hover,
+.el-button[style]:hover,
+[class*="el-button"][style]:hover {
+  background: rgba(44, 62, 80, 0.4) !important;
+  color: white !important;
+  border-color: transparent !important;
+}
+
+/* === Element Plus 输入框组件 - 严格4色合规 === */
+.el-input__inner,
+.el-textarea__inner {
+  background: var(--color-bg-primary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  transition: var(--transition-base) !important;
+  color: var(--color-text-primary) !important;
+  font-size: 16px !important; /* 防止iOS缩放 */
+  min-height: 44px !important; /* 移动端友好 */
+  padding: var(--spacing-sm) var(--spacing-md) !important;
+}
+
+.el-input__inner:focus,
+.el-textarea__inner:focus {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-accent-primary-light) !important;
+  outline: none !important;
+}
+
+/* === Element Plus 卡片组件 - 玻璃态效果 === */
+.el-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-medium) !important;
+  transition: var(--transition-base) !important;
+  overflow: hidden !important;
+}
+
+.el-card:hover {
+  transform: translateY(-4px) scale(1.01) !important;
+  box-shadow: var(--shadow-strong) !important;
+  border-color: var(--color-accent-primary-light) !important;
+}
+
+/* 表格样式统一 */
+.el-table {
+  background: var(--primary-white) !important;
+  border: 1px solid rgba(44, 62, 80, 0.1) !important;
+  border-radius: 12px !important;
+}
+
+.el-table th {
+  background: var(--primary-white) !important;
+  color: var(--secondary-black) !important;
+  border-bottom: 2px solid rgba(44, 62, 80, 0.1) !important;
+}
+
+.el-table td {
+  border-bottom: 1px solid rgba(44, 62, 80, 0.05) !important;
+  color: var(--secondary-black) !important;
+}
+
+/* 标签样式统一 - 紫色为主 */
+.el-tag {
+  background: rgba(44, 62, 80, 0.4) !important; /* 紫色背景 15% */
+  color: white !important;
+  border: none !important;
+  border-radius: 16px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.3) !important;
+}
+
+.el-tag.el-tag--info {
+  background: var(--accent-blue) !important; /* 蓝色标签 5% */
+}
+
+/* 进度条样式统一 */
+.el-progress-bar__outer {
+  background: rgba(44, 62, 80, 0.1) !important;
+}
+
+.el-progress-bar__inner {
+  background: linear-gradient(90deg, rgba(44, 62, 80, 0.4) 0%, var(--accent-blue) 100%) !important;
+}
+
+/* 选择器样式统一 */
+.el-select .el-input__inner {
+  background: var(--primary-white) !important;
+  border: 2px solid rgba(44, 62, 80, 0.1) !important;
+}
+
+.el-select-dropdown {
+  background: var(--primary-white) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(44, 62, 80, 0.1) !important;
+  border-radius: 12px !important;
+}
+
+.el-select-dropdown__item:hover {
+  background-color: rgba(44, 62, 80, 0.1) !important;
+  color: var(--secondary-black) !important;
+}
+
+.el-select-dropdown__item.selected {
+  background-color: rgba(44, 62, 80, 0.4) !important;
+  color: white !important;
+}
+
+/* 消息提示样式 */
+.el-message--success {
+  background: var(--primary-white) !important;
+  border: 1px solid rgba(44, 62, 80, 0.4) !important;
+  color: var(--secondary-black) !important;
+}
+
+.el-message--error {
+  background: var(--primary-white) !important;
+  border: 1px solid var(--accent-blue) !important;
+  color: var(--secondary-black) !important;
+}
+
+/* 覆盖任何内联样式的颜色 - 强力覆盖 */
+[style*="background-color"],
+[style*="background:"],
+[style*="background "] {
+  background: var(--primary-white) !important;
+}
+
+[style*="background-color"]:hover,
+[style*="background:"]:hover,
+[style*="background "]:hover {
+  background: rgba(44, 62, 80, 0.4) !important; /* 紫色悬停 */
+}
+
+[style*="background-color: #409EFF"],
+[style*="background-color: #67C23A"],
+[style*="background-color: #E6A23C"],
+[style*="background-color: #F56C6C"],
+[style*="background-color:#409EFF"],
+[style*="background-color:#67C23A"],
+[style*="background-color:#E6A23C"],
+[style*="background-color:#F56C6C"] {
+  background-color: var(--primary-white) !important;
+}
+
+[style*="color: #409EFF"],
+[style*="color: #67C23A"],
+[style*="color: #E6A23C"],
+[style*="color: #F56C6C"] {
+  color: var(--secondary-black) !important;
+}
+
+[style*="border-color: #409EFF"],
+[style*="border-color: #67C23A"],
+[style*="border-color: #E6A23C"],
+[style*="border-color: #F56C6C"] {
+  border-color: rgba(44, 62, 80, 0.2) !important;
+}
+
+/* 强制覆盖渐变背景 */
+[style*="linear-gradient"],
+[style*="gradient"] {
+  background: var(--primary-white) !important;
+}
+
+[style*="linear-gradient"]:hover,
+[style*="gradient"]:hover {
+  background: rgba(44, 62, 80, 0.4) !important;
+}
+
+/* 覆盖任何背景图片 */
+[style*="background-image"] {
+  background-image: none !important;
+  background: var(--primary-white) !important;
+}
+
+/* 特殊组件强制覆盖 */
+.el-step__title {
+  color: var(--secondary-black) !important;
+}
+
+.el-step__description {
+  color: var(--secondary-black) !important;
+  opacity: 0.7;
+}
+
+.el-steps .el-step__line {
+  background-color: rgba(44, 62, 80, 0.2) !important;
+}
+
+.el-steps .el-step__icon {
+  background-color: var(--primary-white) !important;
+  border: 2px solid rgba(44, 62, 80, 0.2) !important;
+  color: var(--secondary-black) !important;
+}
+
+.el-steps .el-step.is-process .el-step__icon,
+.el-steps .el-step.is-finish .el-step__icon {
+  background-color: rgba(44, 62, 80, 0.4) !important;
+  border-color: rgba(44, 62, 80, 0.4) !important;
+  color: white !important;
+}
+
+/* === Element Plus CSS变量覆盖 === */
+* {
+  --el-color-primary: var(--color-accent-primary) !important;
+  --el-color-success: var(--color-accent-primary) !important;
+  --el-color-warning: var(--color-accent-secondary) !important;
+  --el-color-danger: var(--color-accent-secondary) !important;
+  --el-color-info: var(--color-text-secondary) !important;
+  --el-bg-color: var(--color-bg-primary) !important;
+  --el-bg-color-page: var(--color-bg-primary) !important;
+}
+
+/* === 🤖 AI科技感动画系统 - 高性能版本 === */
+
+/* AI扫描光效 - 硬件加速优化 */
+@keyframes aiGlow {
+  0% {
+    background-position: -200% center;
+    transform: translateZ(0); /* 开启硬件加速 */
+  }
+  100% {
+    background-position: 200% center;
+    transform: translateZ(0);
+  }
+}
+
+.ai-glow-effect {
+  position: relative;
+  overflow: hidden;
+  will-change: transform; /* 告知浏览器将要变化的属性 */
+}
+
+.ai-glow-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--color-accent-primary-rgb), 0.4),
+    transparent
+  );
+  transition: var(--transition-base);
+  will-change: left;
+}
+
+.ai-glow-effect:hover::before {
+  left: 100%;
+}
+
+/* AI扫描线动画 - 优化版本 */
+@keyframes aiScan {
+  0% {
+    transform: translateX(-100%) rotate(45deg) translateZ(0);
+  }
+  100% {
+    transform: translateX(300px) rotate(45deg) translateZ(0);
+  }
+}
+
+.ai-scan-line {
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.ai-scan-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--color-accent-primary);
+  box-shadow: 0 0 10px var(--color-accent-primary);
+  animation: aiScan 2s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0); /* 强制硬件加速 */
+}
+
+/* 网格渐现效果 - 性能优化 */
+@keyframes gridFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+  }
+}
+
+.grid-fade-in {
+  animation: gridFadeIn 0.6s var(--transition-base);
+  will-change: opacity, transform;
+}
+
+/* 玻璃态卡片 - 高性能版本 */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-medium);
+  transition: var(--transition-base);
+  will-change: transform, box-shadow;
+  transform: translateZ(0); /* 开启硬件加速 */
+}
+
+.glass-card:hover {
+  transform: translateY(-4px) translateZ(0);
+  box-shadow: var(--shadow-strong);
+}
+
+/* 智能脉冲效果 - 优化版本 */
+@keyframes aiPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(var(--color-accent-primary-rgb), 0.4);
+    transform: scale(1) translateZ(0);
+  }
+  50% {
+    box-shadow: 0 0 0 20px rgba(var(--color-accent-primary-rgb), 0);
+    transform: scale(1.05) translateZ(0);
+  }
+}
+
+.ai-pulse {
+  animation: aiPulse 2s ease-in-out infinite;
+  will-change: box-shadow, transform;
+  transform: translateZ(0);
+}
+
+/* 粒子浮动效果 - 性能优化 */
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) translateZ(0);
+    opacity: 0.4;
+  }
+  25% {
+    transform: translateY(-20px) rotate(90deg) translateZ(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-10px) rotate(180deg) translateZ(0);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(-30px) rotate(270deg) translateZ(0);
+    opacity: 0.9;
+  }
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(45deg, var(--color-accent-primary), var(--color-accent-secondary));
+  border-radius: var(--radius-full);
+  animation: particleFloat 8s infinite ease-in-out;
+  opacity: 0.6;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* 减少动画在低性能设备 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ai-glow-effect::before,
+  .ai-scan-line::after,
+  .particle {
+    animation: none !important;
+  }
+}
+
+/* 移动端动画优化 */
+@media (max-width: 768px) {
+  .ai-glow-effect::before,
+  .ai-scan-line::after {
+    animation-duration: 1.5s; /* 减少动画时长 */
+  }
+
+  .particle {
+    animation-duration: 6s; /* 移动端动画更快 */
+    opacity: 0.3; /* 降低透明度减少渲染负担 */
+  }
+
+  /* 在移动端禁用一些复杂动画 */
+  .ai-pulse {
+    animation: none;
+    box-shadow: var(--shadow-medium);
+  }
+}
+
+/* === 页面背景 - 70%白色主导 === */
+body, html, #app {
+  background: linear-gradient(135deg,
+    var(--color-bg-primary) 0%,
+    var(--color-bg-primary) 70%,
+    var(--color-accent-primary-light) 90%,
+    var(--color-accent-secondary-light) 100%) !important;
+  color: var(--color-text-primary) !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* 页面容器背景覆盖 */
+.container,
+.content,
+.main,
+.page,
+[class*="container"],
+[class*="content"],
+[class*="main"],
+[class*="page"] {
+  background: transparent !important;
+}
+
+/* 覆盖所有可能的颜色类 */
+.primary,
+.success,
+.warning,
+.danger,
+.info,
+[class*="primary"],
+[class*="success"],
+[class*="warning"],
+[class*="danger"],
+[class*="info"] {
+  background: var(--primary-white) !important;
+  color: var(--secondary-black) !important;
+  border-color: rgba(44, 62, 80, 0.2) !important;
+}
+
+.primary:hover,
+.success:hover,
+.warning:hover,
+.danger:hover,
+[class*="primary"]:hover,
+[class*="success"]:hover,
+[class*="warning"]:hover,
+[class*="danger"]:hover {
+  background: rgba(44, 62, 80, 0.4) !important;
+  color: white !important;
+}
+
+.info:hover,
+[class*="info"]:hover {
+  background: var(--accent-blue) !important;
+  color: white !important;
+}
+
+/* 导航相关元素 */
+.header,
+.nav,
+.navbar,
+[class*="header"],
+[class*="nav"] {
+  background: var(--primary-white) !important;
+  border-color: rgba(44, 62, 80, 0.1) !important;
+}
+
+/* 标题和重要文字 */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--secondary-black) !important;
+}
+
+.title,
+.heading,
+[class*="title"],
+[class*="heading"] {
+  color: var(--secondary-black) !important;
+}
+
+/* 链接颜色 */
+a {
+  color: rgba(44, 62, 80, 0.4) !important;
+}
+
+a:hover {
+  color: var(--accent-blue) !important;
+}
+
+/* 超级强力覆盖 - 使用更高优先级 */
+body *, html *, #app * {
+  background-image: none !important;
+  background-attachment: unset !important;
+}
+
+/* 页面主体背景强制覆盖 */
+.explosive-content-recreation,
+.content-generator,
+.storyboard,
+.hooks,
+.home,
+[class*="page-"],
+[class*="view-"],
+[class*="container-"] {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* 强制移除所有动画背景 */
+[style*="gradientFlow"],
+[style*="background-size"],
+[style*="background-attachment"],
+.gradientFlow {
+  background: transparent !important;
+  animation: none !important;
+}
+
+/* 终极覆盖：任何包含background的样式 */
+[style*="background"] {
+  background: var(--primary-white) !important;
+}
+
+[style*="background"]:hover {
+  background: rgba(44, 62, 80, 0.4) !important;
+}
+
+/* 最终兜底：覆盖所有元素的背景 */
+*:not(body):not(html):not(#app) {
+  background-image: none !important;
+}
+
+/* 清除渐变动画 */
+[style*="animation"],
+[class*="gradient"],
+[class*="flow"] {
+  animation: none !important;
+  background: var(--primary-white) !important;
+}
+
+/* 统一内容区域和结果区域透明度 */
+.result-content,
+.content-display,
+.content-area,
+.hooks-container,
+.history-list,
+.generation-info {
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
+}
+
+/* 统一所有内容项目透明度 */
+.hook-item,
+.history-item,
+.content-item,
+.result-item {
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(44, 62, 80, 0.1) !important;
+}
+
+/* 特殊情况：确保白色背景优先级 */
+.white-bg,
+*[class*="white"],
+*[class*="bg"] {
+  background: var(--primary-white) !important;
+}
+
+.black-text,
+*[class*="text"] {
+  color: var(--secondary-black) !important;
+}
+
+.purple-accent {
+  color: rgba(44, 62, 80, 0.4) !important;
+}
+
+.blue-accent {
+  color: var(--accent-blue) !important;
+}
+
+/* Tab标签页样式 */
+.el-tabs__header {
+  background: var(--primary-white) !important;
+  border-bottom: 2px solid rgba(44, 62, 80, 0.1) !important;
+}
+
+.el-tabs__item {
+  color: var(--secondary-black) !important;
+}
+
+.el-tabs__item.is-active {
+  color: rgba(44, 62, 80, 0.4) !important;
+}
+
+.el-tabs__active-bar {
+  background: rgba(44, 62, 80, 0.4) !important;
+}
+
+/* 工具提示样式 - 白底黑字 */
+.el-tooltip__popper,
+.el-popover,
+.el-tooltip {
+  background: var(--primary-white) !important;
+  color: var(--secondary-black) !important;
+  border: 1px solid rgba(44, 62, 80, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.15) !important;
+}
+
+.el-tooltip__popper .el-tooltip__arrow,
+.el-popover .el-popper__arrow {
+  border-top-color: var(--primary-white) !important;
+  border-bottom-color: var(--primary-white) !important;
+  border-left-color: var(--primary-white) !important;
+  border-right-color: var(--primary-white) !important;
+}
+
+.el-tooltip__popper[x-placement^="top"] .el-tooltip__arrow {
+  border-top-color: var(--primary-white) !important;
+}
+
+.el-tooltip__popper[x-placement^="bottom"] .el-tooltip__arrow {
+  border-bottom-color: var(--primary-white) !important;
+}
+
+.el-tooltip__popper[x-placement^="left"] .el-tooltip__arrow {
+  border-left-color: var(--primary-white) !important;
+}
+
+.el-tooltip__popper[x-placement^="right"] .el-tooltip__arrow {
+  border-right-color: var(--primary-white) !important;
+}
