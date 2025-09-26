@@ -376,7 +376,7 @@ const generateRecreation = async () => {
     }
 
     // 使用fetch POST请求，然后通过EventSource接收流式响应
-    const response = await fetch('http://localhost:5003/api/explosive-recreation', {
+    const response = await fetch('/api/explosive-recreation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

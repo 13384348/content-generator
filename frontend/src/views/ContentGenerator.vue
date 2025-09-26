@@ -1167,15 +1167,15 @@ export default {
       loading.topics = true
       try {
         const requestData = {
-          type: stepData.step1.topicType,
+          topicType: stepData.step1.topicType,
           industry: stepData.step1.industry
         }
 
-        const response = await axios.post('/api/generate', requestData)
+        const response = await axios.post('/api/generate-topics', requestData)
 
         if (response.data.success) {
-          stepData.step2.topics = response.data.topics
-          ElMessage.success(`成功生成 ${response.data.topics.length} 条选题`)
+          stepData.step2.topics = response.data.data
+          ElMessage.success(`成功生成 ${response.data.data.length} 条选题`)
         } else {
           ElMessage.error(response.data.error || '生成失败')
         }
@@ -1201,15 +1201,15 @@ export default {
       loading.hooks = true
       try {
         const requestData = {
-          type: stepData.step3.hookType,
+          hookType: stepData.step3.hookType,
           topic: stepData.step2.selectedTopic
         }
 
         const response = await axios.post('/api/generate-hooks', requestData)
 
         if (response.data.success) {
-          stepData.step3.hooks = response.data.hooks
-          ElMessage.success(`成功生成 ${response.data.hooks.length} 条钩子`)
+          stepData.step3.hooks = response.data.data
+          ElMessage.success(`成功生成 ${response.data.data.length} 条钩子`)
         } else {
           ElMessage.error(response.data.error || '生成失败')
         }

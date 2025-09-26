@@ -8,8 +8,9 @@ import axios from 'axios'
 
 import App from './App.vue'
 
-// 设置axios默认配置
-axios.defaults.baseURL = 'http://localhost:5004'
+// 设置axios默认配置 - 自动检测环境
+const isDev = process.env.NODE_ENV === 'development'
+axios.defaults.baseURL = isDev ? 'http://localhost:5004' : ''
 axios.defaults.timeout = 10000
 
 const app = createApp(App)

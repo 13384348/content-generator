@@ -59,16 +59,16 @@
   --accent-blue: var(--color-accent-primary);
 }
 
-/* 暗色模式适配（保持4色限制） */
+/* 强制禁用暗色模式 - 保持白色背景 */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg-primary: #0f0f0f;
-    --color-bg-secondary: #1a1a1a;
-    --color-text-primary: #ffffff;
-    --color-text-secondary: #cccccc;
-    --glass-bg: rgba(26, 26, 26, 0.9);
-    --color-border: rgba(255, 255, 255, 0.1);
-    --color-shadow: rgba(0, 0, 0, 0.3);
+    --color-bg-primary: #ffffff !important;
+    --color-bg-secondary: #fafbfc !important;
+    --color-text-primary: #1a1a1a !important;
+    --color-text-secondary: #666666 !important;
+    --glass-bg: rgba(255, 255, 255, 0.9) !important;
+    --color-border: rgba(26, 26, 26, 0.1) !important;
+    --color-shadow: rgba(26, 26, 26, 0.1) !important;
   }
 }
 
