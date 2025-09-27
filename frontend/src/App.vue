@@ -799,51 +799,63 @@ export default {
   transform: translateX(-50%) translateY(-8px);
 }
 
-/* 气泡位置布局 - 更接近大脑，大小层次分明 */
+/* 气泡位置布局 - 围绕机器人均匀分布，避免重叠 */
 
-/* 大气泡 - 主要功能 */
+/* 内容生成 - 左上方 */
 .bubble-1 {
-  top: 20%; left: 30%;
-  width: 94px; height: 94px;
+  top: 15%; left: 20%;
+  width: 90px; height: 90px;
   animation-delay: 0s;
   z-index: 10;
 }
 
+/* 爆款二创 - 右上方 */
 .bubble-2 {
-  top: 25%; right: 28%;
-  width: 87px; height: 87px;
+  top: 18%; right: 20%;
+  width: 85px; height: 85px;
   animation-delay: 0.5s;
   z-index: 9;
 }
 
+/* 分镜脚本 - 右下方 */
 .bubble-3 {
-  bottom: 25%; right: 30%;
-  width: 90px; height: 90px;
+  bottom: 18%; right: 25%;
+  width: 88px; height: 88px;
   animation-delay: 1s;
   z-index: 10;
 }
 
-/* 中等气泡 - 重要功能 */
+/* 我的收藏 - 左下方 */
 .bubble-4 {
-  bottom: 20%; left: 32%;
-  width: 74px; height: 74px;
+  bottom: 15%; left: 25%;
+  width: 80px; height: 80px;
   animation-delay: 1.5s;
   z-index: 8;
 }
 
-/* 小气泡 - 辅助功能 */
+/* 我的历史 - 左中 */
 .bubble-5 {
-  top: 40%; left: 25%;
-  width: 64px; height: 64px;
+  top: 50%; left: 10%;
+  width: 75px; height: 75px;
   animation-delay: 2s;
   z-index: 7;
 }
 
+/* 推荐奖励 - 右中 */
 .bubble-6 {
-  top: 42%; right: 23%;
-  width: 60px; height: 60px;
+  top: 50%; right: 10%;
+  width: 75px; height: 75px;
   animation-delay: 2.5s;
   z-index: 6;
+}
+
+/* 管理后台 - 正上方 */
+.bubble-7 {
+  top: 8%; left: 50%;
+  transform: translateX(-50%);
+  width: 70px; height: 70px;
+  animation-delay: 3s;
+  z-index: 5;
 }
 
 /* === 🚀 新的全屏布局系统 === */
@@ -862,16 +874,7 @@ export default {
 
 /* 气泡动画：移动到右上角并排列 */
 .layout-content .bubble-navigation {
-  position: fixed;
-  top: 20px;
-  right: 60px;
-  width: auto;
-  height: auto;
-  display: flex;
-  flex-direction: row;
-  gap: 0px;
-  z-index: 1000;
-  transition: var(--transition-slow);
+  display: none; /* 隐藏内容模式下的导航气泡 */
 }
 
 .layout-content .bubble,
@@ -880,35 +883,36 @@ export default {
 .layout-content .bubble-3,
 .layout-content .bubble-4,
 .layout-content .bubble-5,
-.layout-content .bubble-6 {
+.layout-content .bubble-6,
+.layout-content .bubble-7 {
   position: relative !important;
-  width: 40px !important;
-  height: 40px !important;
-  margin: 0 -20px !important;
+  width: 50px !important;
+  height: 50px !important;
+  margin: 0 5px !important;
   top: auto !important;
   left: auto !important;
   right: auto !important;
   bottom: auto !important;
-  transform: scale(0.5) !important;
+  transform: none !important;
   transform-origin: center !important;
   box-shadow: var(--shadow-small) !important;
   transition: var(--transition-slow) !important;
-  padding: 4px !important;
+  padding: 8px !important;
 }
 
 /* 内容模式下放大图标和文字以铺满汽泡 */
 .brain-container.layout-content .bubble-icon {
-  font-size: 24px !important;
-  margin-bottom: 2px !important;
+  font-size: 20px !important;
+  margin-bottom: 4px !important;
 }
 
 .brain-container.layout-content .bubble-text {
-  font-size: 14px !important;
-  line-height: 1.1 !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
 }
 
 .brain-container.layout-content .bubble-title {
-  font-size: 14px !important;
+  font-size: 10px !important;
   font-weight: 600 !important;
 }
 
@@ -926,14 +930,14 @@ export default {
   background: var(--color-accent-primary) !important;
   color: var(--color-bg-primary) !important;
   box-shadow: 0 4px 20px rgba(var(--color-accent-primary-rgb), 0.4) !important;
-  transform: scale(0.55) !important;
+  transform: scale(1.1) !important;
 }
 
 /* 机器人动画：移动到左上角作为返回按钮 */
 .layout-content .brain-center {
   position: fixed;
   top: 20px;
-  left: 180px;
+  left: 120px;
   transform: none;
   z-index: 999;
   transition: var(--transition-slow);
@@ -1056,15 +1060,17 @@ export default {
 .content-main {
   flex: 1;
   overflow-y: auto;
-  padding-top: 100px; /* 给机器人和气泡预留空间 */
-  padding-left: var(--spacing-lg);
-  padding-right: var(--spacing-lg);
+  padding-top: 80px; /* 只给机器人预留空间，不需要气泡空间 */
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
   padding-bottom: var(--spacing-lg);
   background: var(--color-bg-primary);
   position: relative;
   z-index: 101;
   width: 100%;
   height: 100%;
+  display: flex;
+  justify-content: center; /* 水平居中 */
 }
 
 /* 🎬 统一的平滑渐变动画 */
@@ -1128,7 +1134,8 @@ export default {
   .layout-content .bubble-3,
   .layout-content .bubble-4,
   .layout-content .bubble-5,
-  .layout-content .bubble-6 {
+  .layout-content .bubble-6,
+  .layout-content .bubble-7 {
     width: 32px !important;
     height: 32px !important;
     padding: 3px !important;
@@ -1154,7 +1161,7 @@ export default {
 
   .layout-content .brain-center {
     top: 15px;
-    left: 120px;
+    left: 80px;
     padding: var(--spacing-xs);
     min-width: 44px; /* 确保触控友好 */
     min-height: 44px;
@@ -1180,15 +1187,22 @@ export default {
   }
 
   .content-main {
-    padding-top: 80px; /* 移动端减少上间距 */
-    padding-left: var(--spacing-md);
-    padding-right: var(--spacing-md);
+    padding-top: 70px; /* 移动端进一步减少上间距 */
+    padding-left: var(--spacing-sm);
+    padding-right: var(--spacing-sm);
     padding-bottom: var(--spacing-md);
   }
 }
 
 @media (max-width: 480px) {
-  .layout-content .bubble {
+  .layout-content .bubble,
+  .layout-content .bubble-1,
+  .layout-content .bubble-2,
+  .layout-content .bubble-3,
+  .layout-content .bubble-4,
+  .layout-content .bubble-5,
+  .layout-content .bubble-6,
+  .layout-content .bubble-7 {
     width: 11px !important;
     height: 11px !important;
     padding: 1px !important;
@@ -1557,8 +1571,8 @@ export default {
 }
 
 .user-interface.layout-content {
-  top: 120px; /* 增加高度，避免与气泡导航重叠 */
-  right: 80px; /* 内容模式下也往左移动 */
+  top: 20px; /* 恢复正常高度，因为没有气泡导航了 */
+  right: 120px; /* 内容模式下与主页位置保持一致 */
 }
 
 /* 使用次数计数器 */
@@ -1679,8 +1693,8 @@ export default {
   }
 
   .user-interface.layout-content {
-    top: 100px; /* 移动端内容模式下增加高度避免重叠 */
-    right: 50px; /* 移动端内容模式下也往左移动 */
+    top: 15px; /* 移动端恢复正常高度 */
+    right: 80px; /* 移动端内容模式下与主页位置保持一致 */
   }
 
   .usage-counter {

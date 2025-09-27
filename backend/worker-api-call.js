@@ -17,11 +17,10 @@ function makeApiCall() {
             }
         ],
         max_tokens: 1500,
-        temperature: 0.8,
-        top_p: 0.9
+        temperature: 0.8
     };
 
-    const postData = JSON.stringify(requestData);
+    const postData = Buffer.from(JSON.stringify(requestData), 'utf8');
     const url = new URL(apiUrl);
 
     const options = {
@@ -35,7 +34,7 @@ function makeApiCall() {
             'Content-Length': Buffer.byteLength(postData),
             'User-Agent': 'Node.js/' + process.version
         },
-        timeout: 30000
+        timeout: 45000
     };
 
     const req = https.request(options, (res) => {
