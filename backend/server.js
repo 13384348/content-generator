@@ -1441,6 +1441,18 @@ app.post('/api/generate-hooks-stream', async (req, res) => {
   }
 });
 
+// 静态文件服务
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// 处理SPA路由 - 放在最后，让API路由优先匹配
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
+
 app.listen(port, () => {
   console.log(`服务器运行在 http://localhost:${port}`);
 });
