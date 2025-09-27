@@ -7,6 +7,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import axios from 'axios'
 
 import App from './App.vue'
+import { useUserStore } from './stores/user'
 
 // 设置axios默认配置 - 开发模式使用Vite代理，生产模式使用空baseURL
 const isDev = process.env.NODE_ENV === 'development'
@@ -23,4 +24,12 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 app.use(ElementPlus)
 app.use(pinia)
-app.mount('#app')
+
+// 初始化用户认证状态
+const userStore = useUserStore()
+userStore.initAuth().then(() => {
+  app.mount('#app')
+}).catch((error) => {
+  console.error('初始化用户状态失败:', error)
+  app.mount('#app')
+})

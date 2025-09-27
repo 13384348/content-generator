@@ -1,10 +1,10 @@
 const express = require('express');
-const { auth, optionalAuth } = require('../middleware/auth');
+const { auth, authenticateToken } = require('../middleware/auth');
 const { getUserDatabase } = require('../database/user-db');
 const router = express.Router();
 
 // 保存使用记录
-router.post('/save', optionalAuth, async (req, res) => {
+router.post('/save', authenticateToken, async (req, res) => {
   try {
     const { feature_type, content_type, input_data, output_data, usage_type = 'free' } = req.body;
 
@@ -69,7 +69,7 @@ router.post('/save', optionalAuth, async (req, res) => {
 });
 
 // 获取历史记录列表
-router.get('/list', optionalAuth, async (req, res) => {
+router.get('/list', authenticateToken, async (req, res) => {
   try {
     const { page = 1, limit = 20, feature_type } = req.query;
     const userId = req.user?.id || null;
@@ -172,7 +172,7 @@ router.get('/list', optionalAuth, async (req, res) => {
 });
 
 // 获取单条历史记录详情
-router.get('/:id', optionalAuth, async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id || null;
@@ -242,7 +242,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
 });
 
 // 删除历史记录
-router.delete('/:id', optionalAuth, async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id || null;
@@ -304,7 +304,7 @@ router.delete('/:id', optionalAuth, async (req, res) => {
 });
 
 // 批量删除历史记录
-router.delete('/batch/:ids', optionalAuth, async (req, res) => {
+router.delete('/batch/:ids', authenticateToken, async (req, res) => {
   try {
     const { ids } = req.params;
     const userId = req.user?.id || null;

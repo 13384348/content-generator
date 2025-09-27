@@ -13,10 +13,11 @@
           <el-avatar :size="60" :icon="User" />
         </div>
         <div class="user-details">
-          <h3 v-if="userStore.isGuest">访客用户</h3>
+          <h3 v-if="!userStore.isLoggedIn">访客用户</h3>
           <h3 v-else>{{ userStore.user?.email }}</h3>
           <div class="user-type">
-            <el-tag v-if="userStore.isGuest" type="info" size="small">访客模式</el-tag>
+            <el-tag v-if="!userStore.isLoggedIn" type="info" size="small">访客模式</el-tag>
+            <el-tag v-else-if="userStore.isAdmin" type="warning" size="small">管理员账户</el-tag>
             <el-tag v-else type="success" size="small">注册用户</el-tag>
           </div>
         </div>
@@ -43,7 +44,7 @@
           </div>
 
           <!-- 付费使用次数 -->
-          <div v-if="!userStore.isGuest" class="usage-card">
+          <div v-if="userStore.isLoggedIn" class="usage-card">
             <div class="usage-icon">💰</div>
             <div class="usage-info">
               <div class="usage-label">付费次数</div>
@@ -73,7 +74,7 @@
       </div>
 
       <!-- 推荐码（仅注册用户） -->
-      <div v-if="!userStore.isGuest" class="referral-section">
+      <div v-if="userStore.isLoggedIn" class="referral-section">
         <h4>推荐好友</h4>
         <div class="referral-card">
           <div class="referral-info">
@@ -97,7 +98,7 @@
 
       <!-- 操作按钮 -->
       <div class="action-section">
-        <div v-if="userStore.isGuest" class="guest-actions">
+        <div v-if="!userStore.isLoggedIn" class="guest-actions">
           <el-button
             type="primary"
             size="large"

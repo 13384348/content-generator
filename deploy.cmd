@@ -1,0 +1,3 @@
+@echo off
+echo 🚀 正在部署到服务器...
+call deploy-to-server.bat

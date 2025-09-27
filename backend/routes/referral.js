@@ -1,5 +1,5 @@
 const express = require('express');
-const { auth, optionalAuth } = require('../middleware/auth');
+const { auth, authenticateToken } = require('../middleware/auth');
 const { getUserDatabase } = require('../database/user-db');
 const crypto = require('crypto');
 const router = express.Router();

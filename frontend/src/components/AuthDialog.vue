@@ -130,19 +130,19 @@
         </span>
       </div>
 
-      <!-- 访客提示 -->
-      <div class="guest-info">
+      <!-- 用户福利提示 -->
+      <div class="benefits-info">
         <el-alert
-          title="访客模式"
-          type="info"
+          title="用户福利"
+          type="success"
           :closable="false"
           show-icon
-          class="guest-alert"
+          class="benefits-alert"
         >
           <template #default>
-            <div class="guest-content">
-              <p>当前为访客模式，可免费体验 <strong>5次</strong></p>
-              <p>注册账户可获得 <strong>10次</strong> 免费使用机会</p>
+            <div class="benefits-content">
+              <p>注册用户可获得 <strong>10次</strong> 免费使用机会</p>
+              <p>更多精彩功能等您体验！</p>
             </div>
           </template>
         </el-alert>
@@ -372,21 +372,21 @@ const handleClose = (done) => {
   color: var(--el-text-color-regular);
 }
 
-.guest-info {
+.benefits-info {
   margin-top: 30px;
 }
 
-.guest-alert {
-  background: var(--el-color-info-light-9);
-  border: 1px solid var(--el-color-info-light-7);
+.benefits-alert {
+  background: var(--el-color-success-light-9);
+  border: 1px solid var(--el-color-success-light-7);
 }
 
-.guest-content p {
+.benefits-content p {
   margin: 5px 0;
   font-size: 13px;
 }
 
-.guest-content strong {
+.benefits-content strong {
   color: var(--el-color-primary);
   font-weight: 600;
 }

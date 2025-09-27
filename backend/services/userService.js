@@ -144,6 +144,7 @@ class UserService {
         resolve({
           userId: user.id,
           email: user.email,
+          username: user.username,
           token,
           referralCode: user.referral_code,
           freeUsageLimit: 10,
@@ -261,6 +262,7 @@ class UserService {
         // 注册用户
         this.db.get(`
           SELECT
+            email,
             free_usage_count,
             paid_usage_count,
             total_purchased,
@@ -274,6 +276,26 @@ class UserService {
           } else {
             if (!row) {
               return reject(new Error('用户不存在'));
+            }
+
+            // 检查是否是管理员（管理员无限制使用）
+            const adminEmails = ['ok47584@126.com', '2918707003@qq.com'];
+            const isAdmin = adminEmails.includes(row.email);
+
+            if (isAdmin) {
+              // 管理员账户无限制
+              resolve({
+                canUse: true,
+                freeUsageCount: row.free_usage_count,
+                paidUsageCount: row.paid_usage_count,
+                totalPurchased: row.total_purchased,
+                freeLimit: 999999,
+                subscriptionStatus: 'active',
+                monthlyUsageLimit: 999999,
+                monthlyUsageCount: row.monthly_usage_count,
+                type: 'admin'
+              });
+              return;
             }
 
             const freeLimit = 10;

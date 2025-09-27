@@ -7,7 +7,11 @@ export const useUserStore = defineStore('user', () => {
   const user = ref(null)
   const token = ref(localStorage.getItem('authToken') || null)
   const isLoggedIn = computed(() => !!token.value && !!user.value)
-  const isGuest = computed(() => user.value?.type === 'guest')
+  const isGuest = computed(() => false) // 不再支持访客模式
+
+  // 管理员状态 - 基于特定邮箱判断
+  const adminEmails = ['ok47584@126.com', '2918707003@qq.com']
+  const isAdmin = computed(() => !!user.value && adminEmails.includes(user.value.email))
 
   // 使用信息
   const usageInfo = ref({
@@ -16,6 +20,14 @@ export const useUserStore = defineStore('user', () => {
     paidUsageCount: 0,
     totalPurchased: 0,
     canUse: true
+  })
+
+  // 计算是否可以使用功能 - 管理员总是可以使用
+  const canUseFeatures = computed(() => {
+    if (isAdmin.value) {
+      return true
+    }
+    return usageInfo.value.canUse
   })
 
   // 设置axios默认header
@@ -29,6 +41,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+
   // 初始化用户状态
   const initAuth = async () => {
     if (token.value) {
@@ -39,37 +52,11 @@ export const useUserStore = defineStore('user', () => {
         console.error('获取用户信息失败:', error)
         logout()
       }
-    } else {
-      // 创建访客会话
-      await createGuestSession()
     }
+
+    // 不再创建访客会话，未登录用户无法使用功能
   }
 
-  // 创建访客会话
-  const createGuestSession = async () => {
-    try {
-      const response = await axios.post('/api/auth/guest')
-      if (response.data.success) {
-        const { token: guestToken, guestId, userId, freeUsageLimit, freeUsageCount } = response.data.data
-        token.value = guestToken
-        user.value = {
-          id: userId,
-          guestId,
-          type: 'guest'
-        }
-        usageInfo.value = {
-          freeUsageCount,
-          freeUsageLimit,
-          paidUsageCount: 0,
-          totalPurchased: 0,
-          canUse: freeUsageCount < freeUsageLimit
-        }
-        setAuthHeader(guestToken)
-      }
-    } catch (error) {
-      console.error('创建访客会话失败:', error)
-    }
-  }
 
   // 用户注册
   const register = async (email, password, referralCode = null) => {
@@ -86,7 +73,7 @@ export const useUserStore = defineStore('user', () => {
         user.value = {
           id: userData.userId,
           email: userData.email,
-          type: 'user',
+          username: userData.username,
           referralCode: userData.referralCode
         }
         usageInfo.value = {
@@ -122,7 +109,7 @@ export const useUserStore = defineStore('user', () => {
         user.value = {
           id: userData.userId,
           email: userData.email,
-          type: 'user',
+          username: userData.username,
           referralCode: userData.referralCode
         }
         usageInfo.value = {
@@ -150,14 +137,13 @@ export const useUserStore = defineStore('user', () => {
     token.value = null
     usageInfo.value = {
       freeUsageCount: 0,
-      freeUsageLimit: 5,
+      freeUsageLimit: 10,
       paidUsageCount: 0,
       totalPurchased: 0,
-      canUse: true
+      canUse: false  // 未登录无法使用
     }
     setAuthHeader(null)
-    // 重新创建访客会话
-    createGuestSession()
+    // 不再创建访客会话
   }
 
   // 获取用户资料
@@ -238,15 +224,18 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 计算剩余使用次数
+  // 计算剩余使用次数 - 只适用于已登录用户
   const getRemainingUsage = computed(() => {
-    if (user.value?.type === 'guest') {
-      return Math.max(0, usageInfo.value.freeUsageLimit - usageInfo.value.freeUsageCount)
-    } else {
-      const freeRemaining = Math.max(0, usageInfo.value.freeUsageLimit - usageInfo.value.freeUsageCount)
-      const paidRemaining = Math.max(0, usageInfo.value.totalPurchased - usageInfo.value.paidUsageCount)
-      return freeRemaining + paidRemaining
+    if (!user.value || user.value.type !== 'user') {
+      return 0  // 未登录用户无剩余次数
     }
+    // 管理员账户有无限使用次数
+    if (isAdmin.value) {
+      return 999999
+    }
+    const freeRemaining = Math.max(0, usageInfo.value.freeUsageLimit - usageInfo.value.freeUsageCount)
+    const paidRemaining = Math.max(0, usageInfo.value.totalPurchased - usageInfo.value.paidUsageCount)
+    return freeRemaining + paidRemaining
   })
 
   // 支付和订阅相关方法
@@ -358,6 +347,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+
   return {
     // 状态
     user,
@@ -366,12 +356,15 @@ export const useUserStore = defineStore('user', () => {
     isGuest,
     usageInfo,
 
+    // 管理员状态
+    isAdmin,
+
     // 计算属性
     getRemainingUsage,
+    canUseFeatures,
 
     // 方法
     initAuth,
-    createGuestSession,
     register,
     login,
     logout,
@@ -379,6 +372,7 @@ export const useUserStore = defineStore('user', () => {
     checkUsageLimit,
     validateReferralCode,
     updateUsageCount,
+
 
     // 支付和订阅方法
     createOrder,

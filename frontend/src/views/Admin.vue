@@ -3,9 +3,42 @@
 
     <!-- 管理面板 -->
     <div v-if="authenticated">
+      <!-- 顶部导航 -->
+      <el-row :gutter="20" style="margin-bottom: 20px;">
+        <el-col :span="24">
+          <el-card>
+            <div class="main-nav">
+              <el-button-group>
+                <el-button
+                  :type="currentPage === 'prompts' ? 'primary' : 'default'"
+                  @click="switchPage('prompts')"
+                >
+                  <el-icon><Edit /></el-icon>
+                  提示词管理
+                </el-button>
+                <el-button
+                  :type="currentPage === 'users' ? 'primary' : 'default'"
+                  @click="switchPage('users')"
+                >
+                  <el-icon><User /></el-icon>
+                  用户管理
+                </el-button>
+                <el-button
+                  :type="currentPage === 'statistics' ? 'primary' : 'default'"
+                  @click="switchPage('statistics')"
+                >
+                  <el-icon><DataAnalysis /></el-icon>
+                  访问统计
+                </el-button>
+              </el-button-group>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+
       <el-row :gutter="20">
         <!-- 提示词管理 -->
-        <el-col :span="16">
+        <el-col v-if="currentPage === 'prompts'" :span="16">
           <el-card>
             <template #header>
               <div class="card-header">
@@ -14,7 +47,7 @@
                   <el-select
                     v-model="managementMode"
                     @change="switchManagementMode"
-                    style="margin-right: 10px; width: 120px"
+                    style="margin-right: 10px; width: 140px"
                   >
                     <el-option label="选题" value="topics" />
                     <el-option label="钩子" value="hooks" />
@@ -223,11 +256,201 @@
                 <p><strong>注意：</strong>如果不使用变量，系统会自动在提示词后追加原始文案内容。</p>
               </div>
             </div>
+
+          </el-card>
+        </el-col>
+
+        <!-- 用户管理页面 -->
+        <el-col v-if="currentPage === 'users'" :span="24">
+          <el-card>
+            <template #header>
+              <div class="card-header">
+                <span>用户管理</span>
+                <el-button type="primary" @click="loadUsers" :loading="loadingUsers">
+                  <el-icon><Refresh /></el-icon>
+                  刷新用户列表
+                </el-button>
+              </div>
+            </template>
+
+            <div class="user-management">
+              <el-table
+                :data="users"
+                style="width: 100%"
+                v-loading="loadingUsers"
+                class="user-table"
+              >
+                <el-table-column prop="id" label="用户ID" width="80" />
+                <el-table-column prop="email" label="邮箱" min-width="200" />
+                <el-table-column label="注册时间" min-width="150">
+                  <template #default="scope">
+                    {{ formatDate(scope.row.created_at) }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="推荐码" width="120">
+                  <template #default="scope">
+                    {{ scope.row.referral_code || '无' }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="免费使用次数" width="120">
+                  <template #default="scope">
+                    {{ scope.row.free_usage_count || 0 }} / {{ scope.row.free_usage_limit || 10 }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="付费使用次数" width="120">
+                  <template #default="scope">
+                    {{ scope.row.paid_usage_count || 0 }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="200" fixed="right">
+                  <template #default="scope">
+                    <el-button
+                      type="primary"
+                      size="small"
+                      @click="editUserLimits(scope.row)"
+                    >
+                      编辑次数
+                    </el-button>
+                    <el-button
+                      type="info"
+                      size="small"
+                      @click="viewUserDetails(scope.row)"
+                    >
+                      详情
+                    </el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+
+              <!-- 分页 -->
+              <el-pagination
+                v-model:current-page="userPagination.currentPage"
+                v-model:page-size="userPagination.pageSize"
+                :page-sizes="[10, 20, 50, 100]"
+                :total="userPagination.total"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleUserPageSizeChange"
+                @current-change="handleUserPageChange"
+                class="user-pagination"
+              />
+            </div>
+          </el-card>
+        </el-col>
+
+        <!-- 访问统计页面 -->
+        <el-col v-if="currentPage === 'statistics'" :span="24">
+          <el-card>
+            <template #header>
+              <div class="card-header">
+                <span>访问统计</span>
+                <el-button type="primary" @click="loadAccessStatistics" :loading="loadingStatistics">
+                  <el-icon><Refresh /></el-icon>
+                  刷新统计数据
+                </el-button>
+              </div>
+            </template>
+
+            <div class="access-statistics" v-loading="loadingStatistics">
+              <!-- 概览统计卡片 -->
+              <el-row :gutter="20" style="margin-bottom: 20px;">
+                <el-col :span="6">
+                  <el-card class="stat-card">
+                    <el-statistic title="今日访问量" :value="accessStats.today || 0" />
+                  </el-card>
+                </el-col>
+                <el-col :span="6">
+                  <el-card class="stat-card">
+                    <el-statistic title="本周访问量" :value="accessStats.week || 0" />
+                  </el-card>
+                </el-col>
+                <el-col :span="6">
+                  <el-card class="stat-card">
+                    <el-statistic title="本月访问量" :value="accessStats.month || 0" />
+                  </el-card>
+                </el-col>
+                <el-col :span="6">
+                  <el-card class="stat-card">
+                    <el-statistic title="总访问量" :value="accessStats.total || 0" />
+                  </el-card>
+                </el-col>
+              </el-row>
+
+              <el-row :gutter="20" style="margin-bottom: 20px;">
+                <el-col :span="6">
+                  <el-card class="stat-card">
+                    <el-statistic title="今日独立访客" :value="accessStats.unique_today || 0" />
+                  </el-card>
+                </el-col>
+                <el-col :span="6">
+                  <el-card class="stat-card">
+                    <el-statistic title="本周独立访客" :value="accessStats.unique_week || 0" />
+                  </el-card>
+                </el-col>
+                <el-col :span="12">
+                  <el-card class="stat-card">
+                    <div class="trend-info">
+                      <h4>访问趋势</h4>
+                      <p>最近7天每日访问量变化</p>
+                    </div>
+                  </el-card>
+                </el-col>
+              </el-row>
+
+              <!-- 每日访问趋势图表 -->
+              <el-row :gutter="20" style="margin-bottom: 20px;">
+                <el-col :span="16">
+                  <el-card>
+                    <template #header>
+                      <span>最近7天访问趋势</span>
+                    </template>
+                    <div class="trend-chart">
+                      <div v-if="accessStats.daily_trend && accessStats.daily_trend.length > 0">
+                        <div v-for="(day, index) in accessStats.daily_trend" :key="index" class="trend-day">
+                          <span class="trend-date">{{ formatTrendDate(day.date) }}</span>
+                          <div class="trend-bar">
+                            <div
+                              class="trend-fill"
+                              :style="{
+                                width: (day.count / Math.max(...accessStats.daily_trend.map(d => d.count)) * 100) + '%'
+                              }"
+                            ></div>
+                            <span class="trend-count">{{ day.count }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <el-empty v-else description="暂无趋势数据" />
+                    </div>
+                  </el-card>
+                </el-col>
+
+                <!-- 热门页面访问 -->
+                <el-col :span="8">
+                  <el-card>
+                    <template #header>
+                      <span>热门页面</span>
+                    </template>
+                    <div class="popular-pages">
+                      <div v-if="accessStats.popular_pages && accessStats.popular_pages.length > 0">
+                        <div
+                          v-for="(page, index) in accessStats.popular_pages.slice(0, 10)"
+                          :key="index"
+                          class="page-item"
+                        >
+                          <div class="page-url">{{ page.page_url }}</div>
+                          <div class="page-count">{{ page.count }} 次访问</div>
+                        </div>
+                      </div>
+                      <el-empty v-else description="暂无页面访问数据" />
+                    </div>
+                  </el-card>
+                </el-col>
+              </el-row>
+            </div>
           </el-card>
         </el-col>
 
         <!-- 统计信息和历史记录 -->
-        <el-col :span="8">
+        <el-col v-if="currentPage === 'prompts'" :span="8">
           <el-card style="margin-bottom: 20px;">
             <template #header>
               <span>系统统计</span>
@@ -256,6 +479,13 @@
               <el-statistic title="二创总生成次数" :value="statistics.totalExplosiveRecreationGenerations" />
               <el-divider />
               <el-statistic title="二创今日生成" :value="statistics.todayExplosiveRecreationGenerations" />
+            </div>
+            <div v-else-if="managementMode === 'users'">
+              <el-statistic title="总用户数" :value="statistics.totalUsers" />
+              <el-divider />
+              <el-statistic title="今日新注册" :value="statistics.todayNewUsers" />
+              <el-divider />
+              <el-statistic title="活跃用户数" :value="statistics.activeUsers" />
             </div>
           </el-card>
 
@@ -370,6 +600,86 @@
         </el-col>
       </el-row>
     </div>
+
+    <!-- 编辑用户使用次数对话框 -->
+    <el-dialog
+      v-model="editUserDialog.visible"
+      title="编辑用户使用次数"
+      width="500px"
+    >
+      <el-form :model="editUserDialog.form" label-width="120px">
+        <el-form-item label="用户邮箱：">
+          <span>{{ editUserDialog.form.email }}</span>
+        </el-form-item>
+        <el-form-item label="免费使用限制">
+          <el-input-number
+            v-model="editUserDialog.form.freeUsageLimit"
+            :min="0"
+            :max="100"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="免费已使用">
+          <el-input-number
+            v-model="editUserDialog.form.freeUsageCount"
+            :min="0"
+            :max="editUserDialog.form.freeUsageLimit"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="付费已使用">
+          <el-input-number
+            v-model="editUserDialog.form.paidUsageCount"
+            :min="0"
+            style="width: 100%"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editUserDialog.visible = false">取消</el-button>
+        <el-button type="primary" @click="saveUserLimits" :loading="savingUserLimits">
+          保存
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 查看用户详情对话框 -->
+    <el-dialog
+      v-model="userDetailsDialog.visible"
+      title="用户详情"
+      width="600px"
+    >
+      <div v-if="userDetailsDialog.user">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="用户ID">{{ userDetailsDialog.user.id }}</el-descriptions-item>
+          <el-descriptions-item label="邮箱">{{ userDetailsDialog.user.email }}</el-descriptions-item>
+          <el-descriptions-item label="注册时间">{{ formatDate(userDetailsDialog.user.created_at) }}</el-descriptions-item>
+          <el-descriptions-item label="推荐码">{{ userDetailsDialog.user.referral_code || '无' }}</el-descriptions-item>
+          <el-descriptions-item label="免费使用次数">{{ userDetailsDialog.user.free_usage_count || 0 }} / {{ userDetailsDialog.user.free_usage_limit || 10 }}</el-descriptions-item>
+          <el-descriptions-item label="付费使用次数">{{ userDetailsDialog.user.paid_usage_count || 0 }}</el-descriptions-item>
+        </el-descriptions>
+
+        <h3 style="margin-top: 20px;">使用历史</h3>
+        <el-table :data="userDetailsDialog.history" style="width: 100%" max-height="300">
+          <el-table-column prop="feature_type" label="功能类型" width="120" />
+          <el-table-column prop="created_at" label="使用时间" width="150">
+            <template #default="scope">
+              {{ formatDate(scope.row.created_at) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="status" label="状态" width="80">
+            <template #default="scope">
+              <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'">
+                {{ scope.row.status === 'success' ? '成功' : '失败' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <template #footer>
+        <el-button @click="userDetailsDialog.visible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -406,6 +716,7 @@ export default {
   setup() {
     const authenticated = ref(true)
     const activeTab = ref('')
+    const currentPage = ref('prompts') // 'prompts': 提示词管理, 'users': 用户管理
     const managementMode = ref('topics') // 'topics': 选题管理, 'hooks': 钩子管理, 'contents': 文案管理, 'storyboards': 分镜脚本管理
 
     const prompts = ref([])
@@ -438,9 +749,44 @@ export default {
       totalStoryboardGenerations: 0,
       todayStoryboardGenerations: 0,
       totalExplosiveRecreationGenerations: 0,
-      todayExplosiveRecreationGenerations: 0
+      todayExplosiveRecreationGenerations: 0,
+      totalUsers: 0,
+      todayNewUsers: 0,
+      activeUsers: 0
     })
 
+    // 用户管理相关状态
+    const users = ref([])
+    const loadingUsers = ref(false)
+    const savingUserLimits = ref(false)
+    const userPagination = reactive({
+      currentPage: 1,
+      pageSize: 20,
+      total: 0
+    })
+
+    // 编辑用户对话框
+    const editUserDialog = reactive({
+      visible: false,
+      form: {
+        userId: null,
+        email: '',
+        freeUsageLimit: 0,
+        freeUsageCount: 0,
+        paidUsageCount: 0
+      }
+    })
+
+    // 用户详情对话框
+    const userDetailsDialog = reactive({
+      visible: false,
+      user: null,
+      history: []
+    })
+
+    // 访问统计相关状态
+    const accessStats = ref({})
+    const loadingStatistics = ref(false)
 
     const loadPrompts = async () => {
       try {
@@ -581,6 +927,20 @@ export default {
     }
 
     // 模式切换相关方法
+    // 切换主页面
+    const switchPage = (page) => {
+      currentPage.value = page
+      if (page === 'users') {
+        loadUsers()
+        loadUserStatistics()
+      } else if (page === 'prompts') {
+        // 重新加载提示词相关内容
+        switchManagementMode()
+      } else if (page === 'statistics') {
+        loadAccessStatistics()
+      }
+    }
+
     const switchManagementMode = () => {
       activeTab.value = ''
       if (managementMode.value === 'topics') {
@@ -598,6 +958,9 @@ export default {
       } else if (managementMode.value === 'storyboards') {
         loadStoryboardPrompts()
         loadStoryboardHistory()
+      } else if (managementMode.value === 'users') {
+        loadUsers()
+        loadUserStatistics()
       }
     }
 
@@ -612,6 +975,8 @@ export default {
         loadExplosiveRecreationPrompt()
       } else if (managementMode.value === 'storyboards') {
         loadStoryboardPrompts()
+      } else if (managementMode.value === 'users') {
+        loadUsers()
       }
     }
 
@@ -924,6 +1289,130 @@ export default {
       }
     }
 
+    // 用户管理功能
+    const loadUsers = async () => {
+      loadingUsers.value = true
+      try {
+        const response = await axios.get('/api/admin/users', {
+          params: {
+            page: userPagination.currentPage,
+            limit: userPagination.pageSize
+          }
+        })
+
+        if (response.data.success) {
+          users.value = response.data.data.users
+          userPagination.total = response.data.data.total
+        } else {
+          showMessage('error', '加载用户列表失败')
+        }
+      } catch (error) {
+        console.error('加载用户列表失败:', error)
+        showMessage('error', '加载用户列表失败')
+      } finally {
+        loadingUsers.value = false
+      }
+    }
+
+    const loadUserStatistics = async () => {
+      try {
+        const response = await axios.get('/api/admin/user-statistics')
+
+        if (response.data.success) {
+          const data = response.data.data
+          statistics.totalUsers = data.totalUsers
+          statistics.todayNewUsers = data.todayNewUsers
+          statistics.activeUsers = data.activeUsers
+        }
+      } catch (error) {
+        console.error('加载用户统计失败:', error)
+      }
+    }
+
+    const editUserLimits = (user) => {
+      editUserDialog.form.userId = user.id
+      editUserDialog.form.email = user.email
+      editUserDialog.form.freeUsageLimit = user.free_usage_limit || 10
+      editUserDialog.form.freeUsageCount = user.free_usage_count || 0
+      editUserDialog.form.paidUsageCount = user.paid_usage_count || 0
+      editUserDialog.visible = true
+    }
+
+    const saveUserLimits = async () => {
+      savingUserLimits.value = true
+      try {
+        const response = await axios.put(`/api/admin/users/${editUserDialog.form.userId}/limits`, {
+          freeUsageLimit: editUserDialog.form.freeUsageLimit,
+          freeUsageCount: editUserDialog.form.freeUsageCount,
+          paidUsageCount: editUserDialog.form.paidUsageCount
+        })
+
+        if (response.data.success) {
+          showMessage('success', '用户使用次数更新成功')
+          editUserDialog.visible = false
+          loadUsers() // 重新加载用户列表
+        } else {
+          showMessage('error', response.data.error || '更新失败')
+        }
+      } catch (error) {
+        console.error('更新用户使用次数失败:', error)
+        showMessage('error', '更新失败')
+      } finally {
+        savingUserLimits.value = false
+      }
+    }
+
+    const viewUserDetails = async (user) => {
+      userDetailsDialog.user = user
+      userDetailsDialog.visible = true
+
+      // 加载用户使用历史
+      try {
+        const response = await axios.get(`/api/admin/users/${user.id}/history`)
+        if (response.data.success) {
+          userDetailsDialog.history = response.data.data
+        }
+      } catch (error) {
+        console.error('加载用户历史失败:', error)
+        userDetailsDialog.history = []
+      }
+    }
+
+    const handleUserPageSizeChange = (val) => {
+      userPagination.pageSize = val
+      userPagination.currentPage = 1
+      loadUsers()
+    }
+
+    const handleUserPageChange = (val) => {
+      userPagination.currentPage = val
+      loadUsers()
+    }
+
+    // 访问统计功能
+    const loadAccessStatistics = async () => {
+      loadingStatistics.value = true
+      try {
+        const response = await axios.get('/api/admin/access-statistics')
+        if (response.data.success) {
+          accessStats.value = response.data.data
+        } else {
+          showMessage('error', '加载访问统计失败')
+        }
+      } catch (error) {
+        console.error('加载访问统计失败:', error)
+        showMessage('error', '加载访问统计失败: ' + (error.response?.data?.error || error.message))
+      } finally {
+        loadingStatistics.value = false
+      }
+    }
+
+    // 格式化趋势日期
+    const formatTrendDate = (dateStr) => {
+      const date = new Date(dateStr)
+      return `${date.getMonth() + 1}/${date.getDate()}`
+    }
+
     // 组件挂载时自动加载数据
     onMounted(() => {
       loadPrompts()
@@ -977,6 +1466,8 @@ export default {
       resetExplosiveRecreationPrompt,
       loadExplosiveRecreationHistory,
       switchManagementMode,
+      switchPage,
+      currentPage,
       refreshCurrentMode,
       refreshCurrentHistory,
       getPromptName,
@@ -984,7 +1475,27 @@ export default {
       getContentTypeName,
       getStoryboardTypeName,
       getRecreationTypeName,
-      formatDate
+      formatDate,
+
+      // 用户管理
+      users,
+      loadingUsers,
+      savingUserLimits,
+      userPagination,
+      editUserDialog,
+      userDetailsDialog,
+      loadUsers,
+      loadUserStatistics,
+      editUserLimits,
+      saveUserLimits,
+      viewUserDetails,
+      handleUserPageSizeChange,
+      handleUserPageChange,
+      // 访问统计
+      accessStats,
+      loadingStatistics,
+      loadAccessStatistics,
+      formatTrendDate
     }
   }
 }
@@ -1084,6 +1595,25 @@ export default {
 
 .single-prompt-editor .el-form-item {
   margin-bottom: 16px;
+}
+
+/* 用户管理样式 */
+.user-management {
+  padding: 20px 0;
+}
+
+.user-controls {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.user-table {
+  margin-bottom: 20px;
+}
+
+.user-pagination {
+  margin-top: 20px;
+  text-align: center;
 }
 
 /* 竖屏优化 - 针对手机竖屏模式 */
@@ -1204,6 +1734,155 @@ export default {
 
   .help-text code {
     font-size: 12px;
+  }
+}
+
+/* 访问统计样式 */
+.access-statistics {
+  padding: 20px 0;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card :deep(.el-statistic__number) {
+  color: white;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.stat-card :deep(.el-statistic__title) {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.trend-info {
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.trend-info h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.trend-info p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.trend-chart {
+  padding: 15px;
+}
+
+.trend-day {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 8px 0;
+}
+
+.trend-date {
+  width: 60px;
+  font-size: 13px;
+  color: #666;
+  text-align: right;
+  margin-right: 15px;
+}
+
+.trend-bar {
+  flex: 1;
+  position: relative;
+  height: 24px;
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.trend-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #409eff, #67c23a);
+  border-radius: 12px;
+  transition: width 0.3s ease;
+  min-width: 2px;
+}
+
+.trend-count {
+  position: absolute;
+  right: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  z-index: 2;
+}
+
+.popular-pages {
+  padding: 15px;
+}
+
+.page-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.page-item:last-child {
+  border-bottom: none;
+}
+
+.page-url {
+  font-size: 14px;
+  color: #333;
+  flex: 1;
+  margin-right: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-count {
+  font-size: 13px;
+  color: #666;
+  font-weight: bold;
+  background-color: #f0f2f5;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+/* 响应式样式 */
+@media (max-width: 768px) {
+  .access-statistics {
+    padding: 10px 0;
+  }
+
+  .stat-card {
+    margin-bottom: 10px;
+  }
+
+  .trend-day {
+    margin-bottom: 8px;
+  }
+
+  .trend-date {
+    width: 50px;
+    margin-right: 10px;
+  }
+
+  .page-item {
+    padding: 8px 0;
   }
 }
 </style>

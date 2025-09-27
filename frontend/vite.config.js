@@ -14,7 +14,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:5003',
+        target: process.env.NODE_ENV === 'production' ? 'http://localhost:5004' : 'http://localhost:5004',
         changeOrigin: true,
         timeout: 120000, // 设置代理超时为120秒
         proxyTimeout: 120000 // 设置代理响应超时为120秒

@@ -95,6 +95,7 @@ class UsageService {
         // 注册用户检查
         this.db.get(`
           SELECT
+            email,
             free_usage_count,
             paid_usage_count,
             total_purchased,
@@ -111,6 +112,29 @@ class UsageService {
           } else {
             if (!row) {
               return reject(new Error('用户不存在'));
+            }
+
+            // 检查是否是管理员（管理员无限制使用）
+            const adminEmails = ['ok47584@126.com', '2918707003@qq.com'];
+            const isAdmin = adminEmails.includes(row.email);
+
+            if (isAdmin) {
+              // 管理员账户无限制
+              resolve({
+                canUse: true,
+                freeUsageCount: row.free_usage_count,
+                freeLimit: 999999,
+                freeRemaining: 999999,
+                paidUsageCount: row.paid_usage_count,
+                totalPurchased: row.total_purchased,
+                paidRemaining: 999999,
+                subscriptionActive: true,
+                monthlyUsageCount: row.monthly_usage_count,
+                monthlyUsageLimit: 999999,
+                monthlyRemaining: 999999,
+                type: 'admin'
+              });
+              return;
             }
 
             const freeLimit = 10; // 注册用户免费10次

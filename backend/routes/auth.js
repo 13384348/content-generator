@@ -3,26 +3,6 @@ const router = express.Router();
 const UserService = require('../services/userService');
 const { authenticateToken } = require('../middleware/auth');
 
-// 创建访客会话
-router.post('/guest', async (req, res) => {
-  try {
-    const userService = new UserService();
-    const guestData = await userService.createGuest();
-    userService.close();
-
-    res.json({
-      success: true,
-      data: guestData,
-      message: '访客会话创建成功'
-    });
-  } catch (error) {
-    console.error('创建访客会话失败:', error);
-    res.status(500).json({
-      success: false,
-      error: '创建访客会话失败'
-    });
-  }
-});
 
 // 用户注册
 router.post('/register', async (req, res) => {
@@ -106,36 +86,26 @@ router.post('/login', async (req, res) => {
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
     const userService = new UserService();
-    let userData;
+    const userData = await userService.getUserById(req.user.id);
 
-    if (req.user.type === 'guest') {
-      userData = await userService.getUserByGuestId(req.user.guestId);
-      userData = {
-        id: userData.id,
-        type: 'guest',
-        freeUsageCount: userData.free_usage_count,
-        freeUsageLimit: 5
-      };
-    } else {
-      userData = await userService.getUserById(req.user.id);
-      userData = {
-        id: userData.id,
-        email: userData.email,
-        type: 'user',
-        referralCode: userData.referral_code,
-        freeUsageCount: userData.free_usage_count,
-        freeUsageLimit: 10,
-        paidUsageCount: userData.paid_usage_count,
-        totalPurchased: userData.total_purchased,
-        subscriptionStatus: userData.subscription_status
-      };
-    }
+    const responseData = {
+      id: userData.id,
+      email: userData.email,
+      username: userData.username,
+      type: 'user',
+      referralCode: userData.referral_code,
+      freeUsageCount: userData.free_usage_count,
+      freeUsageLimit: 10,
+      paidUsageCount: userData.paid_usage_count,
+      totalPurchased: userData.total_purchased,
+      subscriptionStatus: userData.subscription_status
+    };
 
     userService.close();
 
     res.json({
       success: true,
-      data: userData
+      data: responseData
     });
   } catch (error) {
     console.error('获取用户信息失败:', error);
@@ -150,10 +120,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
 router.get('/usage-limit', authenticateToken, async (req, res) => {
   try {
     const userService = new UserService();
-    const usageData = await userService.checkUsageLimit(
-      req.user.type === 'user' ? req.user.id : null,
-      req.user.type === 'guest' ? req.user.guestId : null
-    );
+    const usageData = await userService.checkUsageLimit(req.user.id, null);
     userService.close();
 
     res.json({

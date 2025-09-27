@@ -124,14 +124,6 @@
           </div>
         </div>
 
-        <!-- 管理后台气泡 -->
-        <div class="bubble bubble-7" @click="selectFeature('admin')" :class="{ active: activeFeature === 'admin' }" :title="'管理后台 - 系统管理和配置设置'">
-          <el-icon class="bubble-icon"><Setting /></el-icon>
-          <div class="bubble-text">
-            <span class="bubble-title">管理后台</span>
-            <span class="bubble-desc">系统设置</span>
-          </div>
-        </div>
       </div>
 
       <!-- 用户界面区域 -->
@@ -142,8 +134,21 @@
           <span class="usage-text">剩余 {{ userStore.getRemainingUsage }} 次</span>
         </div>
 
+        <!-- 管理后台按钮 - 仅管理员可见 -->
+        <div v-if="userStore.isAdmin" class="admin-section">
+          <el-button
+            type="warning"
+            size="small"
+            @click="selectFeature('admin')"
+            class="admin-btn"
+          >
+            <el-icon><Setting /></el-icon>
+            管理后台
+          </el-button>
+        </div>
+
         <!-- 用户头像/登录按钮 -->
-        <div class="user-avatar-section" v-if="!userStore.isGuest">
+        <div class="user-avatar-section" v-if="userStore.isLoggedIn">
           <div class="user-info-wrapper" @click="handleShowUserCenter">
             <el-avatar
               :size="32"
@@ -188,6 +193,7 @@
       @success="handleAuthSuccess"
       @show-auth="handleShowAuth"
     />
+
 
     <!-- 用户中心对话框 -->
     <UserCenter
@@ -235,7 +241,7 @@ import UsageLimitDialog from './components/UsageLimitDialog.vue'
 import PurchaseDialog from './components/PurchaseDialog.vue'
 import SubscriptionDialog from './components/SubscriptionDialog.vue'
 import { useUserStore } from './stores/user.js'
-import { DocumentCopy, RefreshRight, VideoCamera, Star, Clock, UserFilled, Setting } from '@element-plus/icons-vue'
+import { DocumentCopy, RefreshRight, VideoCamera, Star, Clock, UserFilled, Setting, User } from '@element-plus/icons-vue'
 
 export default {
   name: 'App',
@@ -258,7 +264,8 @@ export default {
     Star,
     Clock,
     UserFilled,
-    Setting
+    Setting,
+    User
   },
   setup() {
     const activeFeature = ref(null)
@@ -287,6 +294,19 @@ export default {
         // 返回主页
         returnToHome()
       } else {
+        // 管理后台功能直接进入，不需要检查登录状态和使用限制
+        if (feature === 'admin') {
+          switchToContent(feature)
+          return
+        }
+
+        // 检查用户登录状态
+        if (!userStore.isLoggedIn) {
+          // 未登录用户点击任何功能都弹出登录提示
+          handleShowAuth('login')
+          return
+        }
+
         // 检查使用限制
         const canUse = await checkUsageLimit()
         if (canUse) {
@@ -357,6 +377,7 @@ export default {
       // 认证成功后的处理
       showAuthDialog.value = false
     }
+
 
     // 检查使用限制
     const checkUsageLimit = async () => {
@@ -1649,6 +1670,29 @@ export default {
   font-weight: 500;
   color: var(--color-text-primary);
   white-space: nowrap;
+}
+
+/* 管理后台按钮区域 */
+.admin-section {
+  display: flex;
+  align-items: center;
+}
+
+.admin-btn {
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  min-width: 80px;
+  box-shadow: var(--shadow-small);
+  transition: var(--transition-base);
+}
+
+.admin-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+.admin-btn .el-icon {
+  margin-right: 4px;
 }
 
 /* 登录按钮区域 */

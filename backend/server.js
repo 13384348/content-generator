@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require('bcrypt');
 const { initDatabase, dbPath } = require('./database/init');
 const { initUserDatabase } = require('./database/user-init');
 const { getDatabase } = require('./database/db');
@@ -10,7 +11,7 @@ const authRoutes = require('./routes/auth');
 const paymentRoutes = require('./routes/payment');
 const historyRoutes = require('./routes/history');
 const referralRoutes = require('./routes/referral');
-const { optionalAuth } = require('./middleware/auth');
+const { authenticateToken } = require('./middleware/auth');
 require('dotenv').config();
 
 const app = express();
@@ -25,6 +26,50 @@ app.use(cors({
 }));
 app.use(bodyParser.json({ charset: 'utf-8' }));
 app.use(bodyParser.urlencoded({ extended: true, charset: 'utf-8' }));
+
+// 访问记录中间件
+app.use((req, res, next) => {
+  // 只记录页面访问，不记录API调用和静态资源
+  if (req.method === 'GET' && !req.path.startsWith('/api/') && !req.path.includes('.')) {
+    const db = getDatabase();
+
+    // 获取用户信息（如果已登录）
+    let userId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
+        userId = decoded.id;
+      } catch (error) {
+        // 忽略JWT错误，继续记录访问
+      }
+    }
+
+    // 生成简单的session ID
+    const sessionId = req.ip + '_' + Date.now();
+
+    db.run(
+      `INSERT INTO access_logs (ip_address, user_agent, page_url, referrer, user_id, session_id)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        req.ip || req.connection.remoteAddress,
+        req.get('User-Agent'),
+        req.originalUrl,
+        req.get('Referer'),
+        userId,
+        sessionId
+      ],
+      function(err) {
+        if (err) {
+          console.error('记录访问日志失败:', err);
+        }
+      }
+    );
+  }
+  next();
+});
 
 // 初始化数据库
 initDatabase();
@@ -71,7 +116,7 @@ app.get('/api/prompts/:type', (req, res) => {
 });
 
 // 生成选题
-app.post('/api/generate', optionalAuth, async (req, res) => {
+app.post('/api/generate', authenticateToken, async (req, res) => {
   const { type, industry } = req.body;
 
   if (!type || !industry) {
@@ -1439,6 +1484,411 @@ app.post('/api/generate-hooks-stream', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// 管理员登录API
+app.post('/api/admin/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({
+      success: false,
+      error: '用户名和密码不能为空'
+    });
+  }
+
+  const db = getDatabase();
+
+  try {
+    // 查找管理员账户
+    const admin = await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM admins WHERE username = ?', [username], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        error: '管理员账户不存在'
+      });
+    }
+
+    // 验证密码
+    const isPasswordValid = await bcrypt.compare(password, admin.password_hash);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        error: '密码错误'
+      });
+    }
+
+    // 生成简单的session token（在生产环境中应该使用JWT）
+    const jwt = require('jsonwebtoken');
+    const adminToken = jwt.sign(
+      {
+        adminId: admin.id,
+        username: admin.username,
+        isAdmin: true
+      },
+      process.env.JWT_SECRET || 'admin-secret-key',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      success: true,
+      data: {
+        adminId: admin.id,
+        username: admin.username,
+        email: admin.email,
+        token: adminToken,
+        isAdmin: true
+      }
+    });
+
+  } catch (error) {
+    console.error('管理员登录失败:', error);
+    res.status(500).json({
+      success: false,
+      error: '服务器内部错误'
+    });
+  }
+});
+
+// 验证管理员权限的中间件
+const verifyAdminToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      error: '缺少认证令牌'
+    });
+  }
+
+  try {
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
+
+    // 检查邮箱是否为管理员邮箱
+    const adminEmails = ['ok47584@126.com', '2918707003@qq.com'];
+    if (!adminEmails.includes(decoded.email)) {
+      return res.status(403).json({
+        success: false,
+        error: '权限不足，需要管理员权限'
+      });
+    }
+
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      error: '无效的认证令牌'
+    });
+  }
+};
+
+// 管理员用户管理API接口
+// 获取用户列表
+app.get('/api/admin/users', verifyAdminToken, (req, res) => {
+  const db = getDatabase();
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const offset = (page - 1) * limit;
+
+  // 获取用户总数
+  db.get("SELECT COUNT(*) as total FROM users", (err, countResult) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        error: '获取用户总数失败'
+      });
+    }
+
+    // 获取用户列表
+    db.all(
+      `SELECT id, email, created_at, referral_code,
+              free_usage_count, monthly_usage_limit as free_usage_limit, paid_usage_count
+       FROM users
+       ORDER BY created_at DESC
+       LIMIT ? OFFSET ?`,
+      [limit, offset],
+      (err, users) => {
+        if (err) {
+          return res.status(500).json({
+            success: false,
+            error: '获取用户列表失败'
+          });
+        }
+
+        res.json({
+          success: true,
+          data: {
+            users: users,
+            total: countResult.total
+          }
+        });
+      }
+    );
+  });
+});
+
+// 获取用户统计信息
+app.get('/api/admin/user-statistics', verifyAdminToken, (req, res) => {
+  const db = getDatabase();
+  const today = new Date().toISOString().split('T')[0];
+
+  Promise.all([
+    // 总用户数
+    new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as total FROM users", (err, result) => {
+        if (err) reject(err);
+        else resolve(result.total);
+      });
+    }),
+    // 今日新注册用户
+    new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as total FROM users WHERE DATE(created_at) = ?", [today], (err, result) => {
+        if (err) reject(err);
+        else resolve(result.total);
+      });
+    }),
+    // 总生成记录数（代替活跃用户数）
+    new Promise((resolve, reject) => {
+      db.get(`
+        SELECT COUNT(*) as total
+        FROM generation_history
+        WHERE DATE(created_at) >= DATE('now', '-7 days')
+      `, (err, result) => {
+        if (err) reject(err);
+        else resolve(result.total);
+      });
+    })
+  ]).then(([totalUsers, todayNewUsers, recentGenerations]) => {
+    res.json({
+      success: true,
+      data: {
+        totalUsers,
+        todayNewUsers,
+        activeUsers: recentGenerations  // 使用最近7天的生成记录数代替活跃用户数
+      }
+    });
+  }).catch(error => {
+    res.status(500).json({
+      success: false,
+      error: '获取用户统计失败'
+    });
+  });
+});
+
+// 更新用户使用限制
+app.put('/api/admin/users/:userId/limits', verifyAdminToken, (req, res) => {
+  const db = getDatabase();
+  const userId = req.params.userId;
+  const { freeUsageLimit, freeUsageCount, paidUsageCount } = req.body;
+
+  db.run(
+    `UPDATE users
+     SET monthly_usage_limit = ?, free_usage_count = ?, paid_usage_count = ?
+     WHERE id = ?`,
+    [freeUsageLimit, freeUsageCount, paidUsageCount, userId],
+    function(err) {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          error: '更新用户使用限制失败'
+        });
+      }
+
+      if (this.changes === 0) {
+        return res.status(404).json({
+          success: false,
+          error: '用户不存在'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: '用户使用限制更新成功'
+      });
+    }
+  );
+});
+
+// 获取用户使用历史
+app.get('/api/admin/users/:userId/history', verifyAdminToken, (req, res) => {
+  const db = getDatabase();
+  const userId = req.params.userId;
+
+  // 先尝试从generation_history表获取历史，然后从usage_records表获取
+  db.all(
+    `SELECT
+       prompt_type as feature_type,
+       created_at,
+       'generation' as source,
+       'success' as status
+     FROM generation_history
+     WHERE user_id = ?
+     UNION ALL
+     SELECT
+       feature_type,
+       created_at,
+       'usage' as source,
+       'success' as status
+     FROM usage_records
+     WHERE user_id = ?
+     ORDER BY created_at DESC
+     LIMIT 50`,
+    [userId, userId],
+    (err, history) => {
+      if (err) {
+        console.error('获取用户历史失败:', err);
+        return res.status(500).json({
+          success: false,
+          error: '获取用户历史失败: ' + err.message
+        });
+      }
+
+      // 如果没有历史记录，返回空数组而不是错误
+      res.json({
+        success: true,
+        data: history || []
+      });
+    }
+  );
+});
+
+// 获取访问统计
+app.get('/api/admin/access-statistics', verifyAdminToken, (req, res) => {
+  const db = getDatabase();
+
+  // 并行执行多个统计查询
+  const queries = [
+    // 今日访问量
+    new Promise((resolve, reject) => {
+      db.get(
+        `SELECT COUNT(*) as count FROM access_logs WHERE DATE(created_at) = DATE('now')`,
+        (err, result) => {
+          if (err) reject(err);
+          else resolve({ type: 'today', count: result.count });
+        }
+      );
+    }),
+
+    // 本周访问量
+    new Promise((resolve, reject) => {
+      db.get(
+        `SELECT COUNT(*) as count FROM access_logs WHERE DATE(created_at) >= DATE('now', '-7 days')`,
+        (err, result) => {
+          if (err) reject(err);
+          else resolve({ type: 'week', count: result.count });
+        }
+      );
+    }),
+
+    // 本月访问量
+    new Promise((resolve, reject) => {
+      db.get(
+        `SELECT COUNT(*) as count FROM access_logs WHERE DATE(created_at) >= DATE('now', 'start of month')`,
+        (err, result) => {
+          if (err) reject(err);
+          else resolve({ type: 'month', count: result.count });
+        }
+      );
+    }),
+
+    // 总访问量
+    new Promise((resolve, reject) => {
+      db.get(
+        `SELECT COUNT(*) as count FROM access_logs`,
+        (err, result) => {
+          if (err) reject(err);
+          else resolve({ type: 'total', count: result.count });
+        }
+      );
+    }),
+
+    // 今日独立访客
+    new Promise((resolve, reject) => {
+      db.get(
+        `SELECT COUNT(DISTINCT ip_address) as count FROM access_logs WHERE DATE(created_at) = DATE('now')`,
+        (err, result) => {
+          if (err) reject(err);
+          else resolve({ type: 'unique_today', count: result.count });
+        }
+      );
+    }),
+
+    // 本周独立访客
+    new Promise((resolve, reject) => {
+      db.get(
+        `SELECT COUNT(DISTINCT ip_address) as count FROM access_logs WHERE DATE(created_at) >= DATE('now', '-7 days')`,
+        (err, result) => {
+          if (err) reject(err);
+          else resolve({ type: 'unique_week', count: result.count });
+        }
+      );
+    }),
+
+    // 最近7天每日访问量趋势
+    new Promise((resolve, reject) => {
+      db.all(
+        `SELECT DATE(created_at) as date, COUNT(*) as count
+         FROM access_logs
+         WHERE DATE(created_at) >= DATE('now', '-7 days')
+         GROUP BY DATE(created_at)
+         ORDER BY date`,
+        (err, result) => {
+          if (err) reject(err);
+          else resolve({ type: 'daily_trend', data: result });
+        }
+      );
+    }),
+
+    // 热门页面访问
+    new Promise((resolve, reject) => {
+      db.all(
+        `SELECT page_url, COUNT(*) as count
+         FROM access_logs
+         WHERE page_url != '/'
+         GROUP BY page_url
+         ORDER BY count DESC
+         LIMIT 10`,
+        (err, result) => {
+          if (err) reject(err);
+          else resolve({ type: 'popular_pages', data: result });
+        }
+      );
+    })
+  ];
+
+  Promise.all(queries)
+    .then(results => {
+      const statistics = {};
+      results.forEach(result => {
+        if (result.data) {
+          statistics[result.type] = result.data;
+        } else {
+          statistics[result.type] = result.count;
+        }
+      });
+
+      res.json({
+        success: true,
+        data: statistics
+      });
+    })
+    .catch(error => {
+      console.error('获取访问统计失败:', error);
+      res.status(500).json({
+        success: false,
+        error: '获取访问统计失败'
+      });
+    });
 });
 
 // 静态文件服务

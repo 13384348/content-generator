@@ -750,6 +750,7 @@ import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 import * as XLSX from 'xlsx-js-style'
+import { useUserStore } from '@/stores/user'
 import {
   Setting,
   Star,
@@ -774,6 +775,7 @@ import {
 export default {
   name: 'StepWizardGenerator',
   setup() {
+    const userStore = useUserStore()
     const currentStep = ref(0)
 
     const loading = reactive({
@@ -3266,4 +3268,5 @@ export default {
     color: #F56C6C !important;
   }
 }
+
 </style>
