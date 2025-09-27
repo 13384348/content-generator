@@ -535,6 +535,7 @@ export default {
     const parseTableData = (content) => {
       const lines = content.split('\n')
       const tableData = []
+      let headerProcessed = false
 
       for (let line of lines) {
         line = line.trim()
@@ -550,11 +551,48 @@ export default {
           .filter(cell => cell !== '')
 
         if (cells.length >= 2) {
-          // 清理单元格内容，移除markdown符号
-          const cleanCells = cells.map(cell =>
+          const isHeader = !headerProcessed && (
+            cells.some(cell => cell.includes('镜头') || cell.includes('场景') ||
+                              cell.includes('运镜') || cell.includes('画面') ||
+                              cell.includes('台词') || cell.includes('时间'))
+          )
+
+          let transformedCells = cells.map(cell =>
             cell.replace(/\*+/g, '').replace(/#+/g, '').trim()
           )
-          tableData.push(cleanCells)
+
+          if (isHeader) {
+            // 转换表头为新格式
+            transformedCells = ['时间轴 (秒)', '文案 (配音)', '画面分镜描述', '景别', '镜头运动/特效', '备注/道具']
+            headerProcessed = true
+          } else {
+            // 转换数据行为新格式
+            // 原始格式：[镜头号, 场景描述, 镜头类型/运镜, 画面内容/动作, 台词/音效, 时间（秒）]
+            // 新格式：[时间轴 (秒), 文案 (配音), 画面分镜描述, 景别, 镜头运动/特效, 备注/道具]
+
+            // 确保有足够的列，不足的用空字符串填充
+            while (transformedCells.length < 6) {
+              transformedCells.push('')
+            }
+
+            const timeValue = transformedCells[5] ? `${transformedCells[5]}` : '' // 时间（秒）
+            const scriptValue = transformedCells[4] ? transformedCells[4].replace(/<br>/g, ' ').replace(/\*\*/g, '') : '' // 台词/音效，清理HTML标签
+            const sceneDescription = `${transformedCells[1] || ''} - ${transformedCells[3] || ''}`.trim() // 场景描述 + 画面内容/动作
+            const shotType = extractShotType(transformedCells[2] || '') // 从镜头类型/运镜中提取景别
+            const cameraMovement = extractCameraMovement(transformedCells[2] || '') // 从镜头类型/运镜中提取镜头运动
+            const notes = transformedCells[1] || '' // 场景描述作为备注
+
+            transformedCells = [
+              timeValue,
+              scriptValue,
+              sceneDescription,
+              shotType,
+              cameraMovement,
+              notes
+            ]
+          }
+
+          tableData.push(transformedCells)
         }
       }
 
@@ -643,6 +681,51 @@ export default {
       }
     }
 
+    // 提取景别信息
+    const extractShotType = (cameraInfo) => {
+      // 清理HTML标签和Markdown格式
+      const cleanInfo = cameraInfo.replace(/\*\*/g, '').replace(/<[^>]*>/g, '').trim()
+      const shotTypes = ['大远景', '远景', '全景', '中景', '近景', '特写', '大特写']
+
+      for (let type of shotTypes) {
+        if (cleanInfo.includes(type)) {
+          return type
+        }
+      }
+
+      // 如果没有找到具体景别，尝试从描述中提取第一个词
+      const parts = cleanInfo.split(/[，,、]/)[0]
+      return parts || '中景'
+    }
+
+    // 提取镜头运动信息
+    const extractCameraMovement = (cameraInfo) => {
+      // 清理HTML标签和Markdown格式
+      const cleanInfo = cameraInfo.replace(/\*\*/g, '').replace(/<[^>]*>/g, '').trim()
+      const movements = ['快速推进', '推进', '拉开', '摇移', '跟拍', '跟随', '环绕', '升降', '快速切镜', '切换', '淡入', '淡出', '手持晃动', '固定镜头', '慢动作']
+
+      for (let movement of movements) {
+        if (cleanInfo.includes(movement)) {
+          return movement
+        }
+      }
+
+      // 如果包含逗号，取后面的部分作为运动信息
+      if (cleanInfo.includes('，')) {
+        const parts = cleanInfo.split('，')
+        if (parts.length > 1) {
+          return parts.slice(1).join('，').trim()
+        }
+      } else if (cleanInfo.includes(',')) {
+        const parts = cleanInfo.split(',')
+        if (parts.length > 1) {
+          return parts.slice(1).join(',').trim()
+        }
+      }
+
+      return cleanInfo
+    }
+
     // 表格渲染函数
     const renderAsTable = (content) => {
       console.log('开始渲染表格，原始内容:', content.substring(0, 200))
@@ -677,21 +760,50 @@ export default {
                               cell.includes('台词') || cell.includes('时间'))
           )
 
+          let transformedCells = cells
+
           if (isHeader) {
+            // 转换表头为新格式
+            transformedCells = ['时间轴 (秒)', '文案 (配音)', '画面分镜描述', '景别', '镜头运动/特效', '备注/道具']
             tableHtml += '<tr class="table-header">'
             headerProcessed = true
-            console.log('创建表头行，单元格:', cells)
+            console.log('创建表头行，转换为新格式')
           } else {
+            // 转换数据行为新格式
+            // 原始格式：[镜头号, 场景描述, 镜头类型/运镜, 画面内容/动作, 台词/音效, 时间（秒）]
+            // 新格式：[时间轴 (秒), 文案 (配音), 画面分镜描述, 景别, 镜头运动/特效, 备注/道具]
+
+            // 确保有足够的列，不足的用空字符串填充
+            while (cells.length < 6) {
+              cells.push('')
+            }
+
+            const timeValue = cells[5] ? `${cells[5]}` : '' // 时间（秒）
+            const scriptValue = cells[4] ? cells[4].replace(/<br>/g, ' ').replace(/\*\*/g, '') : '' // 台词/音效，清理HTML标签
+            const sceneDescription = `${cells[1] || ''} - ${cells[3] || ''}`.trim() // 场景描述 + 画面内容/动作
+            const shotType = extractShotType(cells[2] || '') // 从镜头类型/运镜中提取景别
+            const cameraMovement = extractCameraMovement(cells[2] || '') // 从镜头类型/运镜中提取镜头运动
+            const notes = cells[1] || '' // 场景描述作为备注
+
+            transformedCells = [
+              timeValue,
+              scriptValue,
+              sceneDescription,
+              shotType,
+              cameraMovement,
+              notes
+            ]
+
             tableHtml += '<tr>'
-            console.log('创建数据行，单元格:', cells)
+            console.log('创建数据行，转换为新格式:', transformedCells)
           }
 
-          cells.forEach(cell => {
+          transformedCells.forEach(cell => {
             const cleanCell = cell.replace(/\*+/g, '').trim()
             const tag = isHeader ? 'th' : 'td'
             const cellStyle = isHeader
-              ? 'style="border: 1px solid #409eff; padding: 12px 8px; background: linear-gradient(135deg, #409eff 0%, #67c23a 100%); color: white; font-weight: bold;"'
-              : 'style="border: 1px solid #409eff; padding: 12px 8px; background: white;"'
+              ? 'style="border: 1px solid #000; padding: 12px 8px; background: repeating-linear-gradient(45deg, #000 0px, #000 10px, #fff 10px, #fff 20px) !important; color: #000 !important; font-weight: bold; text-align: center; text-shadow: 1px 1px 0px #fff, -1px -1px 0px #fff, 1px -1px 0px #fff, -1px 1px 0px #fff;"'
+              : 'style="border: 1px solid #ddd; padding: 12px 8px; background: white; color: #303133;"'
             tableHtml += `<${tag} ${cellStyle}>${cleanCell}</${tag}>`
           })
 

@@ -2,7 +2,7 @@
   <div class="home">
     <el-row :gutter="20">
       <!-- 输入区域 -->
-      <el-col :span="8">
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
         <el-card class="input-card">
           <template #header>
             <div class="card-header">
@@ -10,17 +10,23 @@
             </div>
           </template>
 
-          <el-form :model="form" label-width="80px">
+          <el-form :model="form" :label-width="isMobile ? '60px' : '80px'">
             <el-form-item label="行业">
               <el-input
                 v-model="form.industry"
                 placeholder="请输入行业，如：汽车、医美、教育等"
                 clearable
+                :size="isMobile ? 'default' : 'default'"
               />
             </el-form-item>
 
             <el-form-item label="选题类型">
-              <el-select v-model="form.selectedType" placeholder="请选择选题类型" style="width: 100%">
+              <el-select
+                v-model="form.selectedType"
+                placeholder="请选择选题类型"
+                style="width: 100%"
+                :size="isMobile ? 'default' : 'default'"
+              >
                 <el-option
                   v-for="type in topicTypes"
                   :key="type.value"
@@ -37,7 +43,7 @@
                 :loading="loading"
                 :disabled="!form.industry || !form.selectedType"
                 style="width: 100%"
-                size="large"
+                :size="isMobile ? 'large' : 'large'"
               >
                 <el-icon><Plus /></el-icon>
                 一键生成选题
@@ -48,7 +54,7 @@
       </el-col>
 
       <!-- 结果区域 -->
-      <el-col :span="16">
+      <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="16">
         <el-card class="result-card">
           <template #header>
             <div class="card-header">
@@ -90,7 +96,7 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CopyDocument } from '@element-plus/icons-vue'
 import axios from 'axios'
@@ -99,6 +105,23 @@ export default {
   name: 'Home',
   setup() {
     const loading = ref(false)
+    const windowWidth = ref(window.innerWidth)
+
+    // 响应式计算移动端状态
+    const isMobile = computed(() => windowWidth.value < 768)
+
+    // 监听窗口大小变化
+    const handleResize = () => {
+      windowWidth.value = window.innerWidth
+    }
+
+    onMounted(() => {
+      window.addEventListener('resize', handleResize)
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('resize', handleResize)
+    })
 
     const form = reactive({
       industry: '',
@@ -134,6 +157,9 @@ export default {
       }
 
       loading.value = true
+      currentResult.topics = []
+      currentResult.industry = form.industry
+      currentResult.type = form.selectedType
 
       try {
         const response = await axios.post('/api/generate', {
@@ -143,9 +169,6 @@ export default {
 
         if (response.data.success) {
           currentResult.topics = response.data.topics
-          currentResult.industry = response.data.industry
-          currentResult.type = response.data.type
-
           ElMessage.success(`成功生成 ${response.data.topics.length} 条选题`)
         } else {
           ElMessage.error(response.data.error || '生成失败')
@@ -182,7 +205,8 @@ export default {
       getTypeName,
       generateTopics,
       copyTopic,
-      CopyDocument
+      CopyDocument,
+      isMobile
     }
   }
 }
@@ -192,6 +216,7 @@ export default {
 .home {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 10px;
 }
 
 .input-card, .result-card {
@@ -203,6 +228,8 @@ export default {
   justify-content: space-between;
   align-items: center;
   font-weight: bold;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .empty-result {
@@ -232,6 +259,7 @@ export default {
   flex: 1;
   display: flex;
   align-items: center;
+  margin-right: 10px;
 }
 
 .topic-number {
@@ -239,15 +267,87 @@ export default {
   color: #409eff;
   margin-right: 10px;
   min-width: 30px;
+  flex-shrink: 0;
 }
 
 .topic-text {
   line-height: 1.5;
   color: #333;
+  word-break: break-word;
 }
 
 .topic-item:hover {
   background-color: #f0f9ff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .home {
+    padding: 0 8px;
+  }
+
+  .input-card, .result-card {
+    margin-bottom: 15px;
+  }
+
+  .card-header {
+    font-size: 14px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .card-header span {
+    margin-bottom: 4px;
+  }
+
+  .topic-item {
+    padding: 12px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topic-content {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .topic-number {
+    min-width: 25px;
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  .topic-text {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .topics-container {
+    max-height: 70vh;
+  }
+
+  .empty-result {
+    min-height: 200px;
+  }
+}
+
+/* 超小屏幕优化 */
+@media (max-width: 480px) {
+  .home {
+    padding: 0 5px;
+  }
+
+  .topic-item {
+    padding: 10px;
+  }
+
+  .topic-text {
+    font-size: 13px;
+  }
+
+  .card-header {
+    font-size: 13px;
+  }
 }
 </style>

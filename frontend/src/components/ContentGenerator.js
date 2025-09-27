@@ -40,6 +40,8 @@ const ContentGenerator = () => {
         type: selectedType,
         topic: topic.trim(),
         hook: hook.trim()
+      }, {
+        timeout: 120000 // 设置120秒超时，文案生成需要更长时间
       });
 
       if (response.data.success) {
