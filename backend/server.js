@@ -254,6 +254,48 @@ app.post('/api/generate-hooks', async (req, res) => {
     });
 });
 
+// 生成选题
+app.post('/api/generate-topics', async (req, res) => {
+  const { industry, count = 20 } = req.body;
+
+  if (!industry) {
+    return res.status(400).json({ error: '缺少必要参数：行业' });
+  }
+
+  try {
+    // 构建选题生成提示词
+    const prompt = `请为"${industry}"行业生成${count}个热门选题。要求：
+1. 选题要有吸引力和话题性
+2. 符合当前市场趋势
+3. 能够引起目标用户的兴趣
+4. 适合短视频内容创作
+5. 每个选题控制在15字以内
+
+请只返回选题列表，每行一个选题：`;
+
+    const result = await deepSeekService.generateTopics(prompt, industry);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        topics: result.topics,
+        industry: industry,
+        count: result.topics.length
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: '生成选题时发生错误'
+    });
+  }
+});
+
 // 管理员接口 - 更新钩子提示词
 app.put('/api/admin/hooks/:type', (req, res) => {
   const { content } = req.body;
@@ -336,6 +378,20 @@ app.get('/api/storyboards', (req, res) => {
   const db = getDatabase();
 
   db.all("SELECT * FROM storyboard_prompts ORDER BY id", (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json(rows);
+  });
+
+});
+
+// 获取所有爆款二创提示词
+app.get('/api/explosive-recreation', (req, res) => {
+  const db = getDatabase();
+
+  db.all("SELECT * FROM explosive_recreation_prompts ORDER BY id", (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -1176,6 +1232,212 @@ app.get('/api/status', (req, res) => {
     status.database = 'error';
     status.error = error.message;
     res.json(status);
+  }
+});
+
+// 流式选题生成API
+app.post('/api/generate-stream', async (req, res) => {
+  const { type, industry } = req.body;
+
+  if (!type || !industry) {
+    return res.status(400).json({ error: '请提供选题类型和行业' });
+  }
+
+  try {
+    const db = getDatabase();
+
+    db.get("SELECT content FROM prompts WHERE type = ?", [type], async (err, row) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+
+      if (!row) {
+        res.status(404).json({ error: '未找到该类型的提示词' });
+        return;
+      }
+
+      // 设置SSE响应头
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Cache-Control'
+      });
+
+      const fullPrompt = `${row.content}\n\n行业：${industry}`;
+
+      try {
+        const { spawn } = require('child_process');
+        const worker = spawn('node', ['worker-stream-api.js', fullPrompt], {
+          cwd: __dirname,
+          stdio: ['pipe', 'pipe', 'pipe']
+        });
+
+        let fullContent = '';
+
+        worker.stdout.on('data', (data) => {
+          const output = data.toString().trim();
+          if (output) {
+            try {
+              const parsed = JSON.parse(output);
+              if (parsed.success) {
+                if (!parsed.complete) {
+                  fullContent += parsed.content;
+                  res.write(`data: ${JSON.stringify({
+                    type: 'chunk',
+                    content: parsed.content
+                  })}\n\n`);
+                } else {
+                  fullContent = parsed.content;
+                  res.write(`data: ${JSON.stringify({
+                    type: 'complete',
+                    content: fullContent
+                  })}\n\n`);
+                  res.write('data: [DONE]\n\n');
+                  res.end();
+                }
+              } else {
+                res.write(`data: ${JSON.stringify({
+                  type: 'error',
+                  error: parsed.error
+                })}\n\n`);
+                res.write('data: [DONE]\n\n');
+                res.end();
+              }
+            } catch (e) {
+              // 忽略解析错误
+            }
+          }
+        });
+
+        worker.on('close', (code) => {
+          if (code !== 0) {
+            res.write(`data: ${JSON.stringify({
+              type: 'error',
+              error: '生成失败'
+            })}\n\n`);
+            res.write('data: [DONE]\n\n');
+            res.end();
+          }
+        });
+
+      } catch (error) {
+        res.write(`data: ${JSON.stringify({
+          type: 'error',
+          error: error.message
+        })}\n\n`);
+        res.write('data: [DONE]\n\n');
+        res.end();
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 流式钩子生成API
+app.post('/api/generate-hooks-stream', async (req, res) => {
+  const { type, topic } = req.body;
+
+  if (!type || !topic) {
+    return res.status(400).json({ error: '请提供钩子类型和选题' });
+  }
+
+  try {
+    const db = getDatabase();
+
+    db.get("SELECT content FROM hook_prompts WHERE type = ?", [type], async (err, row) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+
+      if (!row) {
+        res.status(404).json({ error: '未找到该类型的钩子提示词' });
+        return;
+      }
+
+      // 设置SSE响应头
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Cache-Control'
+      });
+
+      const fullPrompt = `${row.content}\n\n选题：${topic}`;
+
+      try {
+        const { spawn } = require('child_process');
+        const worker = spawn('node', ['worker-stream-api.js', fullPrompt], {
+          cwd: __dirname,
+          stdio: ['pipe', 'pipe', 'pipe']
+        });
+
+        let fullContent = '';
+
+        worker.stdout.on('data', (data) => {
+          const output = data.toString().trim();
+          if (output) {
+            try {
+              const parsed = JSON.parse(output);
+              if (parsed.success) {
+                if (!parsed.complete) {
+                  fullContent += parsed.content;
+                  res.write(`data: ${JSON.stringify({
+                    type: 'chunk',
+                    content: parsed.content
+                  })}\n\n`);
+                } else {
+                  fullContent = parsed.content;
+                  res.write(`data: ${JSON.stringify({
+                    type: 'complete',
+                    content: fullContent
+                  })}\n\n`);
+                  res.write('data: [DONE]\n\n');
+                  res.end();
+                }
+              } else {
+                res.write(`data: ${JSON.stringify({
+                  type: 'error',
+                  error: parsed.error
+                })}\n\n`);
+                res.write('data: [DONE]\n\n');
+                res.end();
+              }
+            } catch (e) {
+              // 忽略解析错误
+            }
+          }
+        });
+
+        worker.on('close', (code) => {
+          if (code !== 0) {
+            res.write(`data: ${JSON.stringify({
+              type: 'error',
+              error: '生成失败'
+            })}\n\n`);
+            res.write('data: [DONE]\n\n');
+            res.end();
+          }
+        });
+
+      } catch (error) {
+        res.write(`data: ${JSON.stringify({
+          type: 'error',
+          error: error.message
+        })}\n\n`);
+        res.write('data: [DONE]\n\n');
+        res.end();
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

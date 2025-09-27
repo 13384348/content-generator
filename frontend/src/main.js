@@ -8,10 +8,10 @@ import axios from 'axios'
 
 import App from './App.vue'
 
-// 设置axios默认配置 - 自动检测环境
+// 设置axios默认配置 - 开发模式使用Vite代理，生产模式使用空baseURL
 const isDev = process.env.NODE_ENV === 'development'
-axios.defaults.baseURL = isDev ? 'http://localhost:5004' : ''
-axios.defaults.timeout = 10000
+axios.defaults.baseURL = isDev ? '' : '' // 开发模式使用相对路径通过Vite代理
+axios.defaults.timeout = 60000 // 增加超时时间
 
 const app = createApp(App)
 const pinia = createPinia()

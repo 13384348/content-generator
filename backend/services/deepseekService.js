@@ -64,67 +64,21 @@ class DeepSeekService {
     }
   }
 
-  // 使用独立子进程进行API调用，避免Express服务器环境干扰
-  async makeWorkerApiCall(prompt, timeout = 30000) {
-    return new Promise((resolve, reject) => {
-      const { spawn } = require('child_process');
-      const path = require('path');
-
-      const workerPath = path.join(__dirname, '..', 'worker-api-call.js');
-
-      // 设置环境变量
-      const env = {
-        ...process.env,
-        DEEPSEEK_API_KEY: this.apiKey,
-        DEEPSEEK_API_URL: this.apiUrl
-      };
-
-      const worker = spawn('node', [workerPath, prompt], {
-        env: env,
-        stdio: ['pipe', 'pipe', 'pipe']
-      });
-
-      let output = '';
-      let errorOutput = '';
-
-      // 设置超时
-      const timer = setTimeout(() => {
-        worker.kill();
-        reject(new Error('子进程超时'));
-      }, timeout);
-
-      worker.stdout.on('data', (data) => {
-        output += data.toString();
-      });
-
-      worker.stderr.on('data', (data) => {
-        errorOutput += data.toString();
-      });
-
-      worker.on('close', (code) => {
-        clearTimeout(timer);
-
-        if (code === 0) {
-          try {
-            const result = JSON.parse(output.trim());
-            if (result.success) {
-              resolve(result.data);
-            } else {
-              reject(new Error(result.error));
-            }
-          } catch (error) {
-            reject(new Error(`解析子进程输出失败: ${error.message}`));
-          }
-        } else {
-          reject(new Error(`子进程退出码: ${code}, 错误输出: ${errorOutput}`));
+  // 直接进行API调用，不使用子进程，避免Windows兼容性问题
+  async makeDirectApiCall(prompt, timeout = 30000) {
+    const requestData = {
+      model: "deepseek-chat",
+      messages: [
+        {
+          role: "user",
+          content: prompt
         }
-      });
+      ],
+      max_tokens: 1500,
+      temperature: 0.8
+    };
 
-      worker.on('error', (error) => {
-        clearTimeout(timer);
-        reject(error);
-      });
-    });
+    return this.makeNativeHttpsRequest(requestData, timeout);
   }
 
   // 使用原生HTTPS模块的更稳定请求方法
@@ -210,17 +164,17 @@ class DeepSeekService {
         };
 
         let response;
-        const currentTimeout = attempt * 12000; // 递增超时: 12s, 24s, 36s, 48s, 60s
+        const currentTimeout = 25000 + (attempt - 1) * 15000; // 递增超时: 25s, 40s, 55s (提高超时时间)
 
-        // 使用独立的子进程来隔离API调用，避免Express服务器环境干扰
-        console.log(`使用独立进程进行API调用，超时设置: ${currentTimeout}ms`);
+        // 使用直接API调用，避免Windows子进程兼容性问题
+        console.log(`使用直接API调用，超时设置: ${currentTimeout}ms`);
         try {
-          const workerResult = await this.makeWorkerApiCall(fullPrompt, currentTimeout);
-          response = { data: workerResult };
-          console.log(`子进程API调用成功，响应choices长度: ${workerResult.choices?.length}`);
-        } catch (workerError) {
-          console.log(`子进程API调用失败: ${workerError.message}`);
-          throw workerError;
+          const directResult = await this.makeDirectApiCall(fullPrompt, currentTimeout);
+          response = { data: directResult };
+          console.log(`直接API调用成功，响应choices长度: ${directResult.choices?.length}`);
+        } catch (directError) {
+          console.log(`直接API调用失败: ${directError.message}`);
+          throw directError;
         }
 
         const content = response.data.choices[0].message.content;
@@ -301,7 +255,7 @@ class DeepSeekService {
   }
 
   // 专门用于生成钩子的方法
-  async generateHooks(fullPrompt, topic, maxRetries = 5) {
+  async generateHooks(fullPrompt, topic, maxRetries = 3) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         console.log(`DeepSeek钩子生成API调用尝试 ${attempt}/${maxRetries}`);
@@ -322,17 +276,17 @@ class DeepSeekService {
         };
 
         let response;
-        const currentTimeout = attempt * 12000; // 递增超时: 12s, 24s, 36s, 48s, 60s
+        const currentTimeout = 25000 + (attempt - 1) * 15000; // 递增超时: 25s, 40s, 55s (提高超时时间)
 
-        // 使用独立的子进程来隔离API调用，避免Express服务器环境干扰
-        console.log(`使用独立进程进行钩子生成API调用，超时设置: ${currentTimeout}ms`);
+        // 使用直接API调用，避免Windows子进程兼容性问题
+        console.log(`使用直接钩子生成API调用，超时设置: ${currentTimeout}ms`);
         try {
-          const workerResult = await this.makeWorkerApiCall(fullPrompt, currentTimeout);
-          response = { data: workerResult };
-          console.log(`子进程钩子生成API调用成功，响应choices长度: ${workerResult.choices?.length}`);
-        } catch (workerError) {
-          console.log(`子进程钩子生成API调用失败: ${workerError.message}`);
-          throw workerError;
+          const directResult = await this.makeDirectApiCall(fullPrompt, currentTimeout);
+          response = { data: directResult };
+          console.log(`直接钩子生成API调用成功，响应choices长度: ${directResult.choices?.length}`);
+        } catch (directError) {
+          console.log(`直接钩子生成API调用失败: ${directError.message}`);
+          throw directError;
         }
 
         const content = response.data.choices[0].message.content;
@@ -372,31 +326,47 @@ class DeepSeekService {
     }
   }
 
-  async generateContent(fullPrompt) {
-    try {
-      const response = await axios.post(this.apiUrl, {
-        model: "deepseek-chat",
-        messages: [
-          {
-            role: "user",
-            content: fullPrompt
-          }
-        ],
-        max_tokens: 1500,
-        temperature: 0.8,
-        top_p: 0.9
-      }, {
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 30000
-      });
+  async generateContent(fullPrompt, maxRetries = 3) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`DeepSeek文案生成API调用尝试 ${attempt}/${maxRetries}`);
+        console.log(`完整提示词长度: ${fullPrompt.length}`);
 
-      return response.data.choices[0].message.content;
-    } catch (error) {
-      console.error('DeepSeek API调用失败:', error.response?.data || error.message);
-      throw error;
+        let response;
+        const currentTimeout = 30000 + (attempt - 1) * 20000; // 递增超时: 30s, 50s, 70s
+
+        // 使用直接API调用，避免Windows子进程兼容性问题
+        console.log(`使用直接文案生成API调用，超时设置: ${currentTimeout}ms`);
+        try {
+          const directResult = await this.makeDirectApiCall(fullPrompt, currentTimeout);
+          response = { data: directResult };
+          console.log(`直接文案生成API调用成功，响应choices长度: ${directResult.choices?.length}`);
+        } catch (directError) {
+          console.log(`直接文案生成API调用失败: ${directError.message}`);
+          throw directError;
+        }
+
+        const content = response.data.choices[0].message.content;
+        console.log(`提取的文案内容长度: ${content.length}`);
+        console.log(`文案内容前100字符: ${content.substring(0, 100)}...`);
+
+        console.log(`DeepSeek文案生成API调用成功`);
+        return content;
+
+      } catch (error) {
+        console.error(`DeepSeek文案生成API第${attempt}次调用失败:`, error.message);
+
+        // 如果这是最后一次尝试，抛出错误
+        if (attempt === maxRetries) {
+          console.error(`文案生成所有${maxRetries}次重试尝试均失败`);
+          throw error;
+        }
+
+        // 等待后重试（递增等待时间）
+        const waitTime = attempt * 3000; // 3s, 6s
+        console.log(`等待 ${waitTime}ms 后进行文案生成第${attempt + 1}次重试...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
     }
   }
 
