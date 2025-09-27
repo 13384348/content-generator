@@ -1,0 +1,73 @@
+# 手动部署命令清单
+# 请在服务器上依次执行这些命令
+
+echo "🚀 开始部署 Content Generator..."
+
+# 1. 停止旧服务
+echo "⏹️ 停止旧服务..."
+pkill -f 'node.*server.js' || true
+
+# 2. 备份旧代码
+echo "📦 备份旧代码..."
+if [ -d "/opt/content-generator" ]; then
+    mv "/opt/content-generator" "/opt/content-generator-backup-$(date +%Y%m%d-%H%M%S)"
+    echo "已备份旧代码"
+fi
+
+# 3. 克隆最新代码
+echo "📥 克隆最新代码..."
+cd /opt
+git clone https://github.com/13384348/content-generator.git
+
+# 4. 安装后端依赖
+echo "📦 安装后端依赖..."
+cd /opt/content-generator/backend
+npm install --production
+
+# 5. 构建前端
+echo "🏗️ 构建前端..."
+cd /opt/content-generator/frontend
+npm install
+npm run build
+
+# 6. 配置生产环境
+echo "⚙️ 配置生产环境..."
+cd /opt/content-generator/backend
+cat > .env << 'EOF'
+NODE_ENV=production
+PORT=5004
+APP_NAME=ContentGenerator
+
+# AI服务配置
+DEEPSEEK_API_KEY=sk-7d1faa1d671a4ba3b20a07758c930e42
+DEEPSEEK_API_URL=https://api.deepseek.com/v1/chat/completions
+
+# JWT配置
+JWT_SECRET=content_generator_jwt_secret_2025
+JWT_EXPIRES_IN=7d
+
+# 管理员配置
+ADMIN_PASSWORD=admin123
+
+# 监控配置
+LOG_LEVEL=info
+
+# CORS配置
+CORS_ORIGIN=http://8.154.36.16
+EOF
+
+# 7. 启动服务
+echo "🚀 启动服务..."
+cd /opt/content-generator/backend
+nohup node server.js > app.log 2>&1 &
+
+# 8. 等待服务启动
+echo "⏳ 等待服务启动..."
+sleep 5
+
+# 9. 健康检查
+echo "🔍 健康检查..."
+curl -f http://localhost:5004/api/health
+
+echo "✅ 部署完成！"
+echo "🌐 网站地址: http://8.154.36.16:5004"
