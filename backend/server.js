@@ -800,7 +800,7 @@ app.post('/api/generate-content-stream', async (req, res) => {
           fullPrompt,
           // onChunk - 每次收到内容块时调用
           (chunk, fullContent) => {
-            res.write(`data: ${JSON.stringify({ type: 'chunk', content: chunk, fullContent })}\n\n`);
+            res.write(`data: ${JSON.stringify({ type: 'chunk', content: chunk })}\n\n`);
           },
           // onComplete - 生成完成时调用
           (fullContent) => {
