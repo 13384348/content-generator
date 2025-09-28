@@ -398,7 +398,7 @@
 
               <!-- 每日访问趋势图表 -->
               <el-row :gutter="20" style="margin-bottom: 20px;">
-                <el-col :span="16">
+                <el-col :span="24">
                   <el-card>
                     <template #header>
                       <span>最近7天访问趋势</span>
@@ -422,9 +422,11 @@
                     </div>
                   </el-card>
                 </el-col>
+              </el-row>
 
-                <!-- 热门页面访问 -->
-                <el-col :span="8">
+              <!-- 热门页面访问 -->
+              <el-row :gutter="20" style="margin-bottom: 20px;">
+                <el-col :span="24">
                   <el-card>
                     <template #header>
                       <span>热门页面</span>

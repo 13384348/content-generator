@@ -1868,14 +1868,24 @@ app.get('/api/admin/access-statistics', verifyAdminToken, (req, res) => {
               '/admin/dashboard': '管理面板',
               '/admin/users': '用户管理',
               '/admin/statistics': '统计报表',
+              '/admin/settings': '系统设置',
               '/content-generator': '内容生成',
               '/content-generator/hooks': '钩子生成',
               '/content-generator/scripts': '脚本生成',
+              '/content-generator/templates': '模板管理',
               '/user-center': '用户中心',
+              '/user-center/profile': '个人资料',
+              '/user-center/history': '使用记录',
+              '/login': '登录页面',
+              '/register': '注册页面',
               '/api/auth/login': 'API-登录',
+              '/api/auth/register': 'API-注册',
+              '/api/auth/logout': 'API-登出',
               '/api/admin/users': 'API-用户管理',
+              '/api/admin/statistics': 'API-统计数据',
               '/api/content/generate': 'API-内容生成',
-              '/api/auth/register': 'API-注册'
+              '/api/content/history': 'API-生成记录',
+              '/api/user/profile': 'API-用户信息'
             };
 
             // 添加页面名称
