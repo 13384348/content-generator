@@ -1752,7 +1752,7 @@ export default {
 }
 
 .stat-card :deep(.el-statistic__number) {
-  color: white;
+  color: #333;
   font-weight: bold;
   font-size: 24px;
 }
