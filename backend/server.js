@@ -1729,16 +1729,16 @@ app.get('/api/admin/users/:userId/history', verifyAdminToken, (req, res) => {
     `SELECT
        prompt_type as feature_type,
        created_at,
-       'generation' as source,
-       'success' as status
+       "generation" as source,
+       "success" as status
      FROM generation_history
      WHERE user_id = ?
      UNION ALL
      SELECT
        feature_type,
        created_at,
-       'usage' as source,
-       'success' as status
+       "usage" as source,
+       "success" as status
      FROM usage_records
      WHERE user_id = ?
      ORDER BY created_at DESC
