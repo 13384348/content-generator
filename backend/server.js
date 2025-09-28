@@ -1860,7 +1860,33 @@ app.get('/api/admin/access-statistics', verifyAdminToken, (req, res) => {
          LIMIT 10`,
         (err, result) => {
           if (err) reject(err);
-          else resolve({ type: 'popular_pages', data: result });
+          else {
+            // 页面名称映射
+            const pageNameMap = {
+              '/': '首页',
+              '/admin': '管理后台',
+              '/admin/dashboard': '管理面板',
+              '/admin/users': '用户管理',
+              '/admin/statistics': '统计报表',
+              '/content-generator': '内容生成',
+              '/content-generator/hooks': '钩子生成',
+              '/content-generator/scripts': '脚本生成',
+              '/user-center': '用户中心',
+              '/api/auth/login': 'API-登录',
+              '/api/admin/users': 'API-用户管理',
+              '/api/content/generate': 'API-内容生成',
+              '/api/auth/register': 'API-注册'
+            };
+
+            // 添加页面名称
+            const enhancedResult = result.map(item => ({
+              page_url: item.page_url,
+              page_name: pageNameMap[item.page_url] || item.page_url,
+              count: item.count
+            }));
+
+            resolve({ type: 'popular_pages', data: enhancedResult });
+          }
         }
       );
     })
