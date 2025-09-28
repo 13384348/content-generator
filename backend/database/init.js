@@ -150,12 +150,9 @@ function initDatabase() {
       }
     ];
 
-    // 插入默认提示词
-    const stmt = db.prepare("INSERT OR IGNORE INTO prompts (type, name, content) VALUES (?, ?, ?)");
-    defaultPrompts.forEach(prompt => {
-      stmt.run(prompt.type, prompt.name, prompt.content);
-    });
-    stmt.finalize();
+    // 注意：不再自动插入默认提示词，避免覆盖用户自定义内容
+    // 用户可以通过管理后台手动添加或导入提示词
+    console.log('提示词表创建完成，跳过默认数据插入以保护用户自定义内容');
 
     // 插入默认钩子提示词
     const hookPrompts = [
