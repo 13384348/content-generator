@@ -106,23 +106,7 @@
           </div>
         </div>
 
-        <!-- 历史记录气泡 -->
-        <div class="bubble bubble-5" @click="selectFeature('history')" :class="{ active: activeFeature === 'history' }" :title="'我的历史 - 查看生成历史记录'">
-          <el-icon class="bubble-icon"><Clock /></el-icon>
-          <div class="bubble-text">
-            <span class="bubble-title">我的历史</span>
-            <span class="bubble-desc">历史记录</span>
-          </div>
-        </div>
 
-        <!-- 推荐奖励气泡 -->
-        <div class="bubble bubble-6" @click="selectFeature('referral')" :class="{ active: activeFeature === 'referral' }" :title="'推荐奖励 - 邀请好友获得奖励'">
-          <el-icon class="bubble-icon"><UserFilled /></el-icon>
-          <div class="bubble-text">
-            <span class="bubble-title">推荐奖励</span>
-            <span class="bubble-desc">邀请好友</span>
-          </div>
-        </div>
 
       </div>
 
@@ -232,8 +216,6 @@ import ContentGenerator from './views/ContentGenerator.vue'
 import ExplosiveContentRecreation from './views/ExplosiveContentRecreation.vue'
 import Storyboard from './views/Storyboard.vue'
 import MyFavorites from './views/MyFavorites.vue'
-import HistoryRecords from './views/HistoryRecords.vue'
-import ReferralRewards from './views/ReferralRewards.vue'
 import Admin from './views/Admin.vue'
 import AuthDialog from './components/AuthDialog.vue'
 import UserCenter from './components/UserCenter.vue'
@@ -241,7 +223,7 @@ import UsageLimitDialog from './components/UsageLimitDialog.vue'
 import PurchaseDialog from './components/PurchaseDialog.vue'
 import SubscriptionDialog from './components/SubscriptionDialog.vue'
 import { useUserStore } from './stores/user.js'
-import { DocumentCopy, RefreshRight, VideoCamera, Star, Clock, UserFilled, Setting, User } from '@element-plus/icons-vue'
+import { DocumentCopy, RefreshRight, VideoCamera, Star, Setting, User } from '@element-plus/icons-vue'
 
 export default {
   name: 'App',
@@ -250,8 +232,6 @@ export default {
     ExplosiveContentRecreation,
     Storyboard,
     MyFavorites,
-    HistoryRecords,
-    ReferralRewards,
     Admin,
     AuthDialog,
     UserCenter,
@@ -262,8 +242,6 @@ export default {
     RefreshRight,
     VideoCamera,
     Star,
-    Clock,
-    UserFilled,
     Setting,
     User
   },
@@ -356,8 +334,6 @@ export default {
         recreation: 'ExplosiveContentRecreation',
         storyboard: 'Storyboard',
         favorites: 'MyFavorites',
-        history: 'HistoryRecords',
-        referral: 'ReferralRewards',
         admin: 'Admin'
       }
       return components[activeFeature.value] || null
@@ -624,9 +600,7 @@ export default {
 .bubble-1:hover ~ .brain-center .connection-1,
 .bubble-2:hover ~ .brain-center .connection-2,
 .bubble-3:hover ~ .brain-center .connection-3,
-.bubble-4:hover ~ .brain-center .connection-4,
-.bubble-5:hover ~ .brain-center .connection-5,
-.bubble-6:hover ~ .brain-center .connection-6 {
+.bubble-4:hover ~ .brain-center .connection-4 {
   opacity: 1;
   stroke: var(--accent-blue);
   stroke-width: 2;
@@ -820,63 +794,38 @@ export default {
   transform: translateX(-50%) translateY(-8px);
 }
 
-/* 气泡位置布局 - 围绕机器人均匀分布，避免重叠 */
+/* 气泡位置布局 - 围绕机器人均匀分布，4个气泡更加平衡 */
 
 /* 内容生成 - 左上方 */
 .bubble-1 {
-  top: 15%; left: 20%;
-  width: 90px; height: 90px;
+  top: 12%; left: 22%;
+  width: 95px; height: 95px;
   animation-delay: 0s;
   z-index: 10;
 }
 
 /* 爆款二创 - 右上方 */
 .bubble-2 {
-  top: 18%; right: 20%;
-  width: 85px; height: 85px;
+  top: 12%; right: 22%;
+  width: 95px; height: 95px;
   animation-delay: 0.5s;
   z-index: 9;
 }
 
 /* 分镜脚本 - 右下方 */
 .bubble-3 {
-  bottom: 18%; right: 25%;
-  width: 88px; height: 88px;
+  bottom: 12%; right: 22%;
+  width: 95px; height: 95px;
   animation-delay: 1s;
   z-index: 10;
 }
 
 /* 我的收藏 - 左下方 */
 .bubble-4 {
-  bottom: 15%; left: 25%;
-  width: 80px; height: 80px;
+  bottom: 12%; left: 22%;
+  width: 95px; height: 95px;
   animation-delay: 1.5s;
   z-index: 8;
-}
-
-/* 我的历史 - 左中 */
-.bubble-5 {
-  top: 50%; left: 10%;
-  width: 75px; height: 75px;
-  animation-delay: 2s;
-  z-index: 7;
-}
-
-/* 推荐奖励 - 右中 */
-.bubble-6 {
-  top: 50%; right: 10%;
-  width: 75px; height: 75px;
-  animation-delay: 2.5s;
-  z-index: 6;
-}
-
-/* 管理后台 - 正上方 */
-.bubble-7 {
-  top: 8%; left: 50%;
-  transform: translateX(-50%);
-  width: 70px; height: 70px;
-  animation-delay: 3s;
-  z-index: 5;
 }
 
 /* === 🚀 新的全屏布局系统 === */
@@ -902,10 +851,7 @@ export default {
 .layout-content .bubble-1,
 .layout-content .bubble-2,
 .layout-content .bubble-3,
-.layout-content .bubble-4,
-.layout-content .bubble-5,
-.layout-content .bubble-6,
-.layout-content .bubble-7 {
+.layout-content .bubble-4 {
   position: relative !important;
   width: 50px !important;
   height: 50px !important;
@@ -1153,10 +1099,7 @@ export default {
   .layout-content .bubble-1,
   .layout-content .bubble-2,
   .layout-content .bubble-3,
-  .layout-content .bubble-4,
-  .layout-content .bubble-5,
-  .layout-content .bubble-6,
-  .layout-content .bubble-7 {
+  .layout-content .bubble-4 {
     width: 32px !important;
     height: 32px !important;
     padding: 3px !important;
@@ -1220,10 +1163,7 @@ export default {
   .layout-content .bubble-1,
   .layout-content .bubble-2,
   .layout-content .bubble-3,
-  .layout-content .bubble-4,
-  .layout-content .bubble-5,
-  .layout-content .bubble-6,
-  .layout-content .bubble-7 {
+  .layout-content .bubble-4 {
     width: 11px !important;
     height: 11px !important;
     padding: 1px !important;
