@@ -169,7 +169,7 @@
 
       <!-- 历史记录 -->
       <el-tab-pane label="生成历史" name="history">
-        <div v-if="historyRecords.length === 0" class="empty-state">
+        <div v-if="!historyRecords || historyRecords.length === 0" class="empty-state">
           <el-empty description="暂无生成历史记录">
             <el-button type="primary" @click="$router.push('/')">去生成内容</el-button>
           </el-empty>
@@ -291,6 +291,10 @@ export default {
     })
 
     const filteredHistory = computed(() => {
+      if (!historyRecords.value || !Array.isArray(historyRecords.value)) {
+        return []
+      }
+
       let filtered = historyRecords.value
 
       // 按类型过滤

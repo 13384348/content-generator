@@ -125,7 +125,7 @@
         </div>
 
         <!-- 推荐历史记录 -->
-        <div v-if="referralHistory.length > 0" class="referral-history">
+        <div v-if="referralHistory && referralHistory.length > 0" class="referral-history">
           <div class="history-header">
             <span>推荐历史</span>
             <el-button type="text" size="small" @click="showAllHistory = !showAllHistory">
@@ -235,6 +235,9 @@ const visible = computed({
 })
 
 const displayedHistory = computed(() => {
+  if (!referralHistory.value || !Array.isArray(referralHistory.value)) {
+    return []
+  }
   if (showAllHistory.value) {
     return referralHistory.value
   }
