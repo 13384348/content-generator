@@ -436,7 +436,7 @@
                           :key="index"
                           class="page-item"
                         >
-                          <div class="page-url">{{ page.page_url }}</div>
+                          <div class="page-url">{{ page.page_name }}</div>
                           <div class="page-count">{{ page.count }} 次访问</div>
                         </div>
                       </div>
