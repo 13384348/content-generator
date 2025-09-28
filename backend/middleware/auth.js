@@ -9,8 +9,9 @@ async function authenticateToken(req, res, next) {
     return res.status(401).json({ error: '请先登录后再使用此功能' });
   }
 
+  let userService = null;
   try {
-    const userService = new UserService();
+    userService = new UserService();
     const decoded = userService.verifyToken(token);
 
     // 只允许注册用户，拒绝访客
@@ -29,7 +30,9 @@ async function authenticateToken(req, res, next) {
     userService.close();
     next();
   } catch (error) {
-    userService?.close();
+    if (userService) {
+      userService.close();
+    }
     return res.status(403).json({ error: '无效的访问令牌，请重新登录' });
   }
 }

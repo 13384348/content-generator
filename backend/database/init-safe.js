@@ -105,6 +105,14 @@ function initDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
+    // 关于内容表
+    db.run(`CREATE TABLE IF NOT EXISTS about_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      content TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
     console.log('数据库表结构初始化完成');
     console.log('⚠️  重要：为保护用户自定义内容，已跳过所有默认数据插入');
     console.log('📝 用户可通过管理后台手动添加或导入提示词');

@@ -1927,6 +1927,66 @@ app.get('/api/admin/access-statistics', verifyAdminToken, (req, res) => {
     });
 });
 
+// 关于内容API
+// 获取关于内容
+app.get('/api/about', (req, res) => {
+  const db = getDatabase();
+  db.get(`SELECT content FROM about_content ORDER BY updated_at DESC LIMIT 1`, (err, row) => {
+    if (err) {
+      console.error('获取关于内容失败:', err);
+      return res.status(500).json({
+        success: false,
+        error: '获取关于内容失败'
+      });
+    }
+
+    const defaultContent = '广西蒙太奇影视传媒有限公司是一家拥有10年影视创作经验及制作公司，拥有丰富的创作经验，运营经验，在AI智能体井喷式的爆发增长下，公司利用最新的AI工具，集合了多年运营创作经验设计整合出全套为做自媒体帐号运营的工具，让企业及个人可以更高效创作内容。联系方式：13978445003，微信同号。';
+
+    res.json({
+      success: true,
+      content: row ? row.content : defaultContent
+    });
+  });
+});
+
+// 管理员更新关于内容
+app.post('/api/admin/about', (req, res) => {
+  const { content } = req.body;
+
+  if (!content || content.trim() === '') {
+    return res.status(400).json({
+      success: false,
+      error: '内容不能为空'
+    });
+  }
+
+  const db = getDatabase();
+
+  // 先删除旧记录，然后插入新记录
+  db.serialize(() => {
+    db.run(`DELETE FROM about_content`, (err) => {
+      if (err) {
+        console.error('删除旧关于内容失败:', err);
+      }
+    });
+
+    db.run(`INSERT INTO about_content (content) VALUES (?)`, [content.trim()], function(err) {
+      if (err) {
+        console.error('保存关于内容失败:', err);
+        return res.status(500).json({
+          success: false,
+          error: '保存失败'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: '保存成功'
+      });
+    });
+  });
+});
+
 // 静态文件服务
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../frontend/dist')));

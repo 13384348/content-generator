@@ -34,6 +34,10 @@
             <path class="connection-line connection-5" d="M140 150 Q 80 120, 40 140" stroke-dasharray="2,3"/>
             <!-- 连接到气泡6 -->
             <path class="connection-line connection-6" d="M260 150 Q 320 120, 360 140" stroke-dasharray="2,3"/>
+            <!-- 连接到气泡5 -->
+            <path class="connection-line connection-5" d="M140 150 Q 80 120, 40 140" stroke-dasharray="2,3"/>
+            <!-- 连接到气泡7 -->
+            <path class="connection-line connection-7" d="M200 190 Q 200 250, 200 280" stroke-dasharray="2,3"/>
           </g>
 
           <!-- 思考脉冲点 -->
@@ -48,8 +52,8 @@
 
         <!-- 大脑中心标题 -->
         <div class="brain-title">
-          <h1>AI内容生成助手</h1>
-          <p>与智能大脑对话，激发创意灵感</p>
+          <h1>萌太奇自媒体运营小弟</h1>
+          <p>萌太奇自媒体运营小弟</p>
         </div>
       </div>
 
@@ -71,42 +75,67 @@
       <!-- 浮动气泡导航 -->
       <div class="bubble-navigation">
         <!-- 内容生成气泡 -->
-        <div class="bubble bubble-1" @click="selectFeature('content')" :class="{ active: activeFeature === 'content' }" :title="'内容生成 - 智能文案创作（包含钩子生成）'">
+        <div class="bubble bubble-1" @click="selectFeature('content')" :class="{ active: activeFeature === 'content' }" :title="'小萌爆款文案大师 - 一键生成选题-钩子-爆款文案-分镜脚本'">
           <el-icon class="bubble-icon"><DocumentCopy /></el-icon>
           <div class="bubble-text">
-            <span class="bubble-title">内容生成</span>
-            <span class="bubble-desc">智能文案创作</span>
+            <span class="bubble-title">小萌爆款文案大师</span>
+            <span class="bubble-desc">一键生成选题-钩子-爆款文案-分镜脚本</span>
           </div>
         </div>
 
         <!-- 二创工具气泡 -->
-        <div class="bubble bubble-2" @click="selectFeature('recreation')" :class="{ active: activeFeature === 'recreation' }" :title="'爆款二创 - 基于爆款内容进行再创作'">
+        <div class="bubble bubble-2" @click="selectFeature('recreation')" :class="{ active: activeFeature === 'recreation' }" :title="'爆款二创 - 根据提供的文案进行二次专属创作'">
           <el-icon class="bubble-icon"><RefreshRight /></el-icon>
           <div class="bubble-text">
             <span class="bubble-title">爆款二创</span>
-            <span class="bubble-desc">内容再创作</span>
+            <span class="bubble-desc">根据提供的文案进行二次专属创作</span>
           </div>
         </div>
 
         <!-- 分镜脚本气泡 -->
-        <div class="bubble bubble-3" @click="selectFeature('storyboard')" :class="{ active: activeFeature === 'storyboard' }" :title="'分镜脚本 - 视频分镜脚本生成'">
+        <div class="bubble bubble-3" @click="selectFeature('storyboard')" :class="{ active: activeFeature === 'storyboard' }" :title="'分镜脚本 - 根据文案内容生成详细拍摄镜头脚本'">
           <el-icon class="bubble-icon"><VideoCamera /></el-icon>
           <div class="bubble-text">
             <span class="bubble-title">分镜脚本</span>
-            <span class="bubble-desc">视频规划</span>
+            <span class="bubble-desc">根据文案内容生成详细拍摄镜头脚本</span>
           </div>
         </div>
 
         <!-- 收藏夹气泡 -->
-        <div class="bubble bubble-4" @click="selectFeature('favorites')" :class="{ active: activeFeature === 'favorites' }" :title="'我的收藏 - 查看和管理收藏的精选内容'">
+        <div class="bubble bubble-4" @click="selectFeature('favorites')" :class="{ active: activeFeature === 'favorites' }" :title="'我的收藏 - 生成内容不浪费，收藏下来可多次使用'">
           <el-icon class="bubble-icon"><Star /></el-icon>
           <div class="bubble-text">
             <span class="bubble-title">我的收藏</span>
-            <span class="bubble-desc">精选内容</span>
+            <span class="bubble-desc">生成内容不浪费，收藏下来可多次使用</span>
           </div>
         </div>
 
+        <!-- 对标账号拆解气泡 -->
+        <div class="bubble bubble-5" @click="handleComingSoon('对标账号拆解')" :title="'对标账号拆解 - 一键扒取对标帐号内容'">
+          <el-icon class="bubble-icon"><DocumentCopy /></el-icon>
+          <div class="bubble-text">
+            <span class="bubble-title">对标账号拆解</span>
+            <span class="bubble-desc">一键扒取对标帐号内容（即将推出）</span>
+          </div>
+        </div>
 
+        <!-- 视频提取文字气泡 -->
+        <div class="bubble bubble-6" @click="handleComingSoon('视频提取文字')" :title="'视频提取文字 - 一键提取视频文字'">
+          <el-icon class="bubble-icon"><VideoCamera /></el-icon>
+          <div class="bubble-text">
+            <span class="bubble-title">视频提取文字</span>
+            <span class="bubble-desc">一键提取视频文字（即将推出）</span>
+          </div>
+        </div>
+
+        <!-- 人设IP打造气泡 -->
+        <div class="bubble bubble-7" @click="handleComingSoon('人设IP打造')" :title="'人设IP打造 - 生成人设个性化爆款内容'">
+          <el-icon class="bubble-icon"><User /></el-icon>
+          <div class="bubble-text">
+            <span class="bubble-title">人设IP打造</span>
+            <span class="bubble-desc">生成人设个性化爆款内容（即将推出）</span>
+          </div>
+        </div>
 
       </div>
 
@@ -170,6 +199,19 @@
 
     </div>
 
+    <!-- 关于萌太奇按钮 -->
+    <div class="about-button">
+      <el-button
+        @click="showAboutDialog = true"
+        class="about-btn"
+        type="info"
+        size="small"
+      >
+        <el-icon><InfoFilled /></el-icon>
+        关于萌太奇
+      </el-button>
+    </div>
+
     <!-- 认证对话框 -->
     <AuthDialog
       v-model="showAuthDialog"
@@ -207,23 +249,31 @@
       v-model="showSubscriptionDialog"
       @success="handleSubscriptionSuccess"
     />
+
+    <!-- 关于萌太奇对话框 -->
+    <AboutDialog
+      v-model="showAboutDialog"
+      :content="aboutContent"
+    />
   </div>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import ContentGenerator from './views/ContentGenerator.vue'
 import ExplosiveContentRecreation from './views/ExplosiveContentRecreation.vue'
 import Storyboard from './views/Storyboard.vue'
 import MyFavorites from './views/MyFavorites.vue'
 import Admin from './views/Admin.vue'
 import AuthDialog from './components/AuthDialog.vue'
+import AboutDialog from './components/AboutDialog.vue'
 import UserCenter from './components/UserCenter.vue'
 import UsageLimitDialog from './components/UsageLimitDialog.vue'
 import PurchaseDialog from './components/PurchaseDialog.vue'
 import SubscriptionDialog from './components/SubscriptionDialog.vue'
 import { useUserStore } from './stores/user.js'
-import { DocumentCopy, RefreshRight, VideoCamera, Star, Setting, User } from '@element-plus/icons-vue'
+import { DocumentCopy, RefreshRight, VideoCamera, Star, Setting, User, InfoFilled } from '@element-plus/icons-vue'
 
 export default {
   name: 'App',
@@ -234,6 +284,7 @@ export default {
     MyFavorites,
     Admin,
     AuthDialog,
+    AboutDialog,
     UserCenter,
     UsageLimitDialog,
     PurchaseDialog,
@@ -243,7 +294,8 @@ export default {
     VideoCamera,
     Star,
     Setting,
-    User
+    User,
+    InfoFilled
   },
   setup() {
     const activeFeature = ref(null)
@@ -259,10 +311,12 @@ export default {
     const showSubscriptionDialog = ref(false)
     const authMode = ref('login')
     const currentUsageInfo = ref(null)
+    const showAboutDialog = ref(false)
 
     // 初始化用户状态
     onMounted(async () => {
       await userStore.initAuth()
+      await loadAboutContent()
     })
 
     const selectFeature = async (feature) => {
@@ -319,10 +373,10 @@ export default {
 
     const getFeatureTitle = (feature) => {
       const titles = {
-        content: '内容生成 - 智能文案创作（包含钩子生成）',
-        recreation: '爆款二创 - 内容再创作',
-        storyboard: '分镜脚本 - 视频规划',
-        favorites: '我的收藏 - 精选内容',
+        content: '小萌爆款文案大师 - 一键生成选题-钩子-爆款文案-分镜脚本',
+        recreation: '爆款二创 - 根据提供的文案进行二次专属创作',
+        storyboard: '分镜脚本 - 根据文案内容生成详细拍摄镜头脚本',
+        favorites: '我的收藏 - 生成内容不浪费，收藏下来可多次使用',
         admin: '管理后台 - 系统设置'
       }
       return titles[feature] || ''
@@ -334,6 +388,9 @@ export default {
         recreation: 'ExplosiveContentRecreation',
         storyboard: 'Storyboard',
         favorites: 'MyFavorites',
+        analysis: 'CompetitorAnalysis',
+        extract: 'VideoTextExtraction',
+        persona: 'PersonalIPDevelopment',
         admin: 'Admin'
       }
       return components[activeFeature.value] || null
@@ -352,6 +409,27 @@ export default {
     const handleAuthSuccess = () => {
       // 认证成功后的处理
       showAuthDialog.value = false
+    }
+
+    // 关于内容状态
+    const aboutContent = ref('广西蒙太奇影视传媒有限公司是一家拥有10年影视创作经验及制作公司，拥有丰富的创作经验，运营经验，在AI智能体井喷式的爆发增长下，公司利用最新的AI工具，集合了多年运营创作经验设计整合出全套为做自媒体帐号运营的工具，让企业及个人可以更高效创作内容。联系方式：13978445003，微信同号。')
+
+    // 从后端获取关于内容
+    const loadAboutContent = async () => {
+      try {
+        const response = await fetch('/api/about')
+        const data = await response.json()
+        if (data.success && data.content) {
+          aboutContent.value = data.content
+        }
+      } catch (error) {
+        console.error('加载关于内容失败:', error)
+      }
+    }
+
+    // 即将推出功能提示
+    const handleComingSoon = (featureName) => {
+      ElMessage.info(`${featureName}功能即将推出，敬请期待！`)
     }
 
 
@@ -426,11 +504,15 @@ export default {
       showUsageLimitDialog,
       showPurchaseDialog,
       showSubscriptionDialog,
+      showAboutDialog,
       authMode,
       currentUsageInfo,
       handleShowAuth,
       handleShowUserCenter,
       handleAuthSuccess,
+      aboutContent,
+      loadAboutContent,
+      handleComingSoon,
       handleShowPurchase,
       handleShowSubscription,
       checkUsageLimit,
@@ -600,7 +682,10 @@ export default {
 .bubble-1:hover ~ .brain-center .connection-1,
 .bubble-2:hover ~ .brain-center .connection-2,
 .bubble-3:hover ~ .brain-center .connection-3,
-.bubble-4:hover ~ .brain-center .connection-4 {
+.bubble-4:hover ~ .brain-center .connection-4,
+.bubble-5:hover ~ .brain-center .connection-5,
+.bubble-6:hover ~ .brain-center .connection-6,
+.bubble-7:hover ~ .brain-center .connection-7 {
   opacity: 1;
   stroke: var(--accent-blue);
   stroke-width: 2;
@@ -627,7 +712,7 @@ export default {
 .brain-title p {
   color: var(--secondary-black);
   opacity: 0.7;
-  font-size: 1.2em;
+  font-size: 0.8em;
   margin: 0;
   font-weight: 300;
 }
@@ -799,7 +884,7 @@ export default {
 /* 内容生成 - 左上方 */
 .bubble-1 {
   top: 12%; left: 22%;
-  width: 95px; height: 95px;
+  width: 170px; height: 170px;
   animation-delay: 0s;
   z-index: 10;
 }
@@ -807,7 +892,7 @@ export default {
 /* 爆款二创 - 右上方 */
 .bubble-2 {
   top: 12%; right: 22%;
-  width: 95px; height: 95px;
+  width: 105px; height: 105px;
   animation-delay: 0.5s;
   z-index: 9;
 }
@@ -823,9 +908,84 @@ export default {
 /* 我的收藏 - 左下方 */
 .bubble-4 {
   bottom: 12%; left: 22%;
-  width: 95px; height: 95px;
+  width: 80px; height: 80px;
   animation-delay: 1.5s;
   z-index: 8;
+}
+
+/* 对标拆解 - 左中 */
+.bubble-5 {
+  top: 50%; left: 8%;
+  width: 90px; height: 90px;
+  animation-delay: 2s;
+  z-index: 7;
+}
+
+/* 提取文字 - 右中 */
+.bubble-6 {
+  top: 50%; right: 8%;
+  width: 75px; height: 75px;
+  animation-delay: 2.5s;
+  z-index: 6;
+}
+
+/* 人设IP - 正上方 */
+.bubble-7 {
+  top: 5%; left: 50%;
+  transform: translateX(-50%);
+  width: 70px; height: 70px;
+  animation-delay: 3s;
+  z-index: 5;
+}
+
+/* 横屏模式下气泡位置优化 - 更靠近机器人但不重叠 */
+@media (max-width: 768px) and (max-height: 500px) {
+  .bubble-1 {
+    top: 15%; left: 25%;
+    width: 140px; height: 140px;
+  }
+
+  .bubble-2 {
+    top: 15%; right: 25%;
+    width: 80px; height: 80px;
+  }
+
+  .bubble-3 {
+    bottom: 15%; right: 25%;
+    width: 70px; height: 70px;
+  }
+
+  .bubble-4 {
+    bottom: 15%; left: 25%;
+    width: 60px; height: 60px;
+  }
+
+  .bubble-5 {
+    top: 50%; left: 12%;
+    width: 75px; height: 75px;
+  }
+
+  .bubble-6 {
+    top: 50%; right: 12%;
+    width: 60px; height: 60px;
+  }
+
+  .bubble-7 {
+    top: 8%; left: 50%;
+    width: 55px; height: 55px;
+  }
+
+  .bubble-icon {
+    font-size: 18px !important;
+  }
+
+  .bubble-title {
+    font-size: 10px !important;
+  }
+
+  .bubble-desc {
+    font-size: 8px !important;
+  }
 }
 
 /* === 🚀 新的全屏布局系统 === */
@@ -1053,10 +1213,105 @@ export default {
   }
 }
 
-/* 竖屏优化 - 专门针对竖屏设备 */
+/* 竖屏优化 - 专门针对竖屏设备，重新布局避免重叠 */
 @media (orientation: portrait) and (max-aspect-ratio: 4/5) {
+  /* 主要气泡重新定位 - 避免重叠 */
+  .bubble-1 {
+    top: 18%; left: 15%;
+    width: 155px; height: 155px;
+  }
+
+  .bubble-2 {
+    top: 18%; right: 15%;
+    width: 85px; height: 85px;
+  }
+
+  .bubble-3 {
+    bottom: 25%; right: 15%;
+    width: 75px; height: 75px;
+  }
+
+  .bubble-4 {
+    bottom: 25%; left: 15%;
+    width: 65px; height: 65px;
+  }
+
+  .bubble-5 {
+    top: 45%; left: 5%;
+    width: 80px; height: 80px;
+  }
+
+  .bubble-6 {
+    top: 45%; right: 5%;
+    width: 65px; height: 65px;
+  }
+
+  /* 人设IP气泡 - 移动到底部左中，避免与顶部气泡重叠 */
+  .bubble-7 {
+    bottom: 12%; left: 40%;
+    transform: translateX(-50%);
+    width: 60px; height: 60px;
+  }
+
+  /* 竖屏模式下副标题更小 */
+  .brain-title p {
+    font-size: 0.65em !important;
+  }
+
+  /* 竖屏时调整字体大小确保可读性 */
+  .bubble-icon {
+    font-size: 16px !important;
+  }
+
+  .bubble-title {
+    font-size: 9px !important;
+  }
+
+  .bubble-desc {
+    font-size: 7px !important;
+  }
+
+  /* 竖屏时右上角导航按钮更小 */
+  .user-interface {
+    top: 10px !important;
+    right: 5px !important;
+    gap: 2px !important;
+    transform: scale(0.75) !important;
+    transform-origin: top right !important;
+  }
+
+  .usage-counter {
+    padding: 2px 4px !important;
+    font-size: 8px !important;
+  }
+
+  .usage-text,
+  .user-name {
+    font-size: 7px !important;
+  }
+
+  .user-info-wrapper {
+    padding: 1px 3px !important;
+    gap: 2px !important;
+  }
+
+  .user-avatar {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .admin-btn,
+  .login-btn,
+  .register-btn {
+    font-size: 7px !important;
+    padding: 1px 3px !important;
+    min-width: 25px !important;
+    height: 18px !important;
+  }
+
+  /* 内容模式下的竖屏布局 */
   .layout-content .brain-center {
-    left: 30px !important; /* 竖屏时机器人更靠左 */
+    left: 30px !important;
   }
 
   .layout-content .bubble-navigation {
@@ -1409,10 +1664,10 @@ export default {
   }
 
   /* 平板气泡重新布局 - 5个气泡 */
-  .bubble-1 { top: 15%; left: 18%; width: 74px; height: 74px; } /* 内容生成 */
-  .bubble-2 { top: 20%; right: 18%; width: 70px; height: 70px; } /* 二创工具 */
+  .bubble-1 { top: 15%; left: 18%; width: 145px; height: 145px; } /* 内容生成 */
+  .bubble-2 { top: 20%; right: 18%; width: 80px; height: 80px; } /* 二创工具 */
   .bubble-3 { bottom: 20%; right: 18%; width: 72px; height: 72px; } /* 分镜脚本 */
-  .bubble-4 { bottom: 15%; left: 18%; width: 67px; height: 67px; } /* 收藏夹 */
+  .bubble-4 { bottom: 15%; left: 18%; width: 57px; height: 57px; } /* 收藏夹 */
   .bubble-5 { top: 50%; left: 8%; width: 64px; height: 64px; } /* 管理后台 */
 }
 
@@ -1456,10 +1711,10 @@ export default {
   }
 
   /* 桌面气泡标准布局 - 5个气泡 */
-  .bubble-1 { top: 20%; left: 25%; width: 94px; height: 94px; } /* 内容生成 */
-  .bubble-2 { top: 25%; right: 25%; width: 87px; height: 87px; } /* 二创工具 */
+  .bubble-1 { top: 20%; left: 25%; width: 170px; height: 170px; } /* 内容生成 */
+  .bubble-2 { top: 25%; right: 25%; width: 100px; height: 100px; } /* 二创工具 */
   .bubble-3 { bottom: 25%; right: 25%; width: 90px; height: 90px; } /* 分镜脚本 */
-  .bubble-4 { bottom: 20%; left: 25%; width: 80px; height: 80px; } /* 收藏夹 */
+  .bubble-4 { bottom: 20%; left: 25%; width: 70px; height: 70px; } /* 收藏夹 */
   .bubble-5 { top: 50%; left: 15%; width: 67px; height: 67px; } /* 管理后台 */
 }
 
@@ -1642,6 +1897,82 @@ export default {
   gap: 8px;
 }
 
+/* 移动端横竖屏导航调整 */
+@media (max-width: 768px) {
+  .user-interface {
+    gap: 6px !important;
+    padding: 8px 12px !important;
+    right: 8px !important;
+  }
+
+  .usage-counter,
+  .admin-section,
+  .user-avatar-section,
+  .login-section {
+    font-size: 11px !important;
+  }
+
+  .usage-text,
+  .user-name {
+    font-size: 10px !important;
+  }
+
+  .admin-btn,
+  .login-btn,
+  .register-btn {
+    font-size: 10px !important;
+    padding: 4px 8px !important;
+    min-width: 50px !important;
+  }
+}
+
+/* 横屏模式强制样式 - 最高优先级 */
+@media (max-width: 768px) and (max-height: 500px) {
+  .user-interface {
+    top: 10px !important;
+    right: 5px !important;
+    gap: 3px !important;
+    padding: 4px 6px !important;
+    transform: scale(0.85) !important;
+    transform-origin: top right !important;
+  }
+
+  .user-interface.layout-content {
+    top: 10px !important;
+    right: 5px !important;
+  }
+
+  .usage-counter {
+    padding: 3px 6px !important;
+    font-size: 9px !important;
+  }
+
+  .usage-text,
+  .user-name {
+    font-size: 8px !important;
+    white-space: nowrap !important;
+  }
+
+  .user-info-wrapper {
+    padding: 2px 6px !important;
+    gap: 4px !important;
+  }
+
+  .user-avatar {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .admin-btn,
+  .login-btn,
+  .register-btn {
+    font-size: 8px !important;
+    padding: 2px 6px !important;
+    min-width: 40px !important;
+    height: 24px !important;
+  }
+}
+
 .login-btn,
 .register-btn {
   border-radius: var(--radius-md);
@@ -1728,5 +2059,30 @@ export default {
     width: 30px !important;
     height: 30px !important;
   }
+}
+
+/* 关于萌太奇按钮 */
+.about-button {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+.about-btn {
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-small);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+}
+
+.about-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.about-btn .el-icon {
+  margin-right: 6px;
 }
 </style>

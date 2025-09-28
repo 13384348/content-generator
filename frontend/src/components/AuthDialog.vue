@@ -16,11 +16,10 @@
         label-position="top"
         class="auth-form"
       >
-        <el-form-item label="邮箱" prop="email">
+        <el-form-item label="用户名" prop="email">
           <el-input
             v-model="loginForm.email"
-            type="email"
-            placeholder="请输入邮箱地址"
+            placeholder="请输入用户名"
             size="large"
             :prefix-icon="User"
           />
@@ -55,11 +54,10 @@
         label-position="top"
         class="auth-form"
       >
-        <el-form-item label="邮箱" prop="email">
+        <el-form-item label="用户名" prop="email">
           <el-input
             v-model="registerForm.email"
-            type="email"
-            placeholder="请输入邮箱地址"
+            placeholder="请输入用户名（不可重复）"
             size="large"
             :prefix-icon="User"
           />
@@ -211,8 +209,8 @@ const registerFormRef = ref(null)
 // 验证规则
 const loginRules = {
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, message: '用户名至少3位', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' }
@@ -221,8 +219,8 @@ const loginRules = {
 
 const registerRules = {
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, message: '用户名至少3位', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },

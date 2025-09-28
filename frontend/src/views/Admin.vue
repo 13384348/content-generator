@@ -30,6 +30,13 @@
                   <el-icon><DataAnalysis /></el-icon>
                   访问统计
                 </el-button>
+                <el-button
+                  :type="currentPage === 'about' ? 'primary' : 'default'"
+                  @click="switchPage('about')"
+                >
+                  <el-icon><InfoFilled /></el-icon>
+                  关于内容
+                </el-button>
               </el-button-group>
             </div>
           </el-card>
@@ -451,6 +458,39 @@
           </el-card>
         </el-col>
 
+        <!-- 关于内容管理页面 -->
+        <el-col v-if="currentPage === 'about'" :span="24">
+          <el-card>
+            <template #header>
+              <div class="card-header">
+                <span>关于内容管理</span>
+                <el-button type="primary" @click="saveAboutContent" :loading="savingAbout">
+                  <el-icon><DocumentAdd /></el-icon>
+                  保存内容
+                </el-button>
+              </div>
+            </template>
+            <div class="about-management">
+              <el-form :model="aboutForm" label-width="120px">
+                <el-form-item label="关于内容">
+                  <el-input
+                    type="textarea"
+                    v-model="aboutForm.content"
+                    :rows="12"
+                    placeholder="请输入关于萌太奇的详细介绍内容..."
+                    style="width: 100%"
+                  />
+                </el-form-item>
+                <el-form-item label="内容预览">
+                  <div class="content-preview">
+                    <div class="preview-text">{{ aboutForm.content || '暂无内容' }}</div>
+                  </div>
+                </el-form-item>
+              </el-form>
+            </div>
+          </el-card>
+        </el-col>
+
         <!-- 统计信息和历史记录 -->
         <el-col v-if="currentPage === 'prompts'" :span="8">
           <el-card style="margin-bottom: 20px;">
@@ -718,7 +758,7 @@ export default {
   setup() {
     const authenticated = ref(true)
     const activeTab = ref('')
-    const currentPage = ref('prompts') // 'prompts': 提示词管理, 'users': 用户管理
+    const currentPage = ref('prompts') // 'prompts': 提示词管理, 'users': 用户管理, 'about': 关于内容管理
     const managementMode = ref('topics') // 'topics': 选题管理, 'hooks': 钩子管理, 'contents': 文案管理, 'storyboards': 分镜脚本管理
 
     const prompts = ref([])
@@ -789,6 +829,12 @@ export default {
     // 访问统计相关状态
     const accessStats = ref({})
     const loadingStatistics = ref(false)
+
+    // 关于内容管理状态
+    const aboutForm = reactive({
+      content: '广西蒙太奇影视传媒有限公司是一家拥有10年影视创作经验及制作公司，拥有丰富的创作经验，运营经验，在AI智能体井喷式的爆发增长下，公司利用最新的AI工具，集合了多年运营创作经验设计整合出全套为做自媒体帐号运营的工具，让企业及个人可以更高效创作内容。联系方式：13978445003，微信同号。'
+    })
+    const savingAbout = ref(false)
 
     const loadPrompts = async () => {
       try {
@@ -940,6 +986,8 @@ export default {
         switchManagementMode()
       } else if (page === 'statistics') {
         loadAccessStatistics()
+      } else if (page === 'about') {
+        loadAboutContent()
       }
     }
 
@@ -1409,6 +1457,42 @@ export default {
       }
     }
 
+    // 关于内容管理方法
+    const loadAboutContent = async () => {
+      try {
+        const response = await axios.get('/api/about')
+        if (response.data.success) {
+          aboutForm.content = response.data.content
+        }
+      } catch (error) {
+        console.error('加载关于内容失败:', error)
+      }
+    }
+
+    const saveAboutContent = async () => {
+      if (!aboutForm.content.trim()) {
+        showMessage('warning', '请输入关于内容')
+        return
+      }
+
+      savingAbout.value = true
+      try {
+        const response = await axios.post('/api/admin/about', {
+          content: aboutForm.content
+        })
+        if (response.data.success) {
+          showMessage('success', '保存成功')
+        } else {
+          showMessage('error', '保存失败')
+        }
+      } catch (error) {
+        console.error('保存关于内容失败:', error)
+        showMessage('error', '保存失败: ' + (error.response?.data?.error || error.message))
+      } finally {
+        savingAbout.value = false
+      }
+    }
+
     // 格式化趋势日期
     const formatTrendDate = (dateStr) => {
       const date = new Date(dateStr)
@@ -1419,6 +1503,7 @@ export default {
     onMounted(() => {
       loadPrompts()
       loadHistory()
+      loadAboutContent()
     })
 
     return {
@@ -1497,7 +1582,11 @@ export default {
       accessStats,
       loadingStatistics,
       loadAccessStatistics,
-      formatTrendDate
+      formatTrendDate,
+      // 关于内容管理
+      aboutForm,
+      savingAbout,
+      saveAboutContent
     }
   }
 }
@@ -1886,5 +1975,25 @@ export default {
   .page-item {
     padding: 8px 0;
   }
+}
+
+/* 关于内容管理样式 */
+.about-management {
+  padding: 20px 0;
+}
+
+.content-preview {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 15px;
+  min-height: 120px;
+}
+
+.preview-text {
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 </style>
