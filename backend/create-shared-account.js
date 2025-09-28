@@ -31,13 +31,13 @@ async function createSharedAccount() {
       // 更新现有账号
       await new Promise((resolve, reject) => {
         db.run(`UPDATE users SET
-                 password = ?,
+                 password_hash = ?,
                  username = ?,
-                 is_admin = 0,
                  free_usage_count = 999999,
-                 free_usage_limit = 999999,
                  paid_usage_count = 0,
-                 subscription_status = 'active'
+                 subscription_status = 'active',
+                 monthly_usage_limit = 999999,
+                 is_registered = 1
                  WHERE email = ?`,
                 [hashedPassword, username, email], (err) => {
           if (err) reject(err);
@@ -58,12 +58,12 @@ async function createSharedAccount() {
       // 插入新账号
       await new Promise((resolve, reject) => {
         db.run(`INSERT INTO users (
-                 email, password, username, is_admin,
-                 free_usage_count, free_usage_limit,
-                 paid_usage_count, subscription_status,
-                 referral_code, created_at
+                 email, password_hash, username,
+                 free_usage_count, paid_usage_count,
+                 subscription_status, monthly_usage_limit,
+                 referral_code, is_registered, created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
-                [email, hashedPassword, username, 0, 999999, 999999, 0, 'active', referralCode], (err) => {
+                [email, hashedPassword, username, 999999, 0, 'active', 999999, referralCode, 1], (err) => {
           if (err) reject(err);
           else resolve();
         });
@@ -84,11 +84,11 @@ async function createSharedAccount() {
     console.log(`邮箱: ${user.email}`);
     console.log(`用户名: ${user.username}`);
     console.log(`密码: ${password}`);
-    console.log(`管理员权限: ${user.is_admin ? '是' : '否'}`);
     console.log(`免费使用次数: ${user.free_usage_count}`);
-    console.log(`免费使用限制: ${user.free_usage_limit}`);
+    console.log(`每月使用限制: ${user.monthly_usage_limit}`);
     console.log(`订阅状态: ${user.subscription_status}`);
     console.log(`推荐码: ${user.referral_code}`);
+    console.log(`已注册: ${user.is_registered ? '是' : '否'}`);
 
     console.log('\n共享账号创建完成！');
     console.log('账号特点：');
